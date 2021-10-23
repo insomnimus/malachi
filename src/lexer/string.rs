@@ -1,20 +1,4 @@
-use nom::{
-	branch::alt,
-	bytes::streaming::is_not,
-	character::streaming::char,
-	combinator::{
-		map,
-		value,
-		verify,
-	},
-	error::ParseError,
-	multi::fold_many0,
-	sequence::{
-		delimited,
-		preceded,
-	},
-	IResult,
-};
+use super::prelude::*;
 
 fn parse_escaped_char<'a, E>(input: &'a str) -> IResult<&'a str, char, E>
 where

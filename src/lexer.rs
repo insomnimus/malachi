@@ -1,3 +1,5 @@
+mod literal;
+mod prelude;
 mod string;
 #[cfg(test)]
 mod tests;
