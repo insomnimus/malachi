@@ -13,3 +13,19 @@ fn test_string() {
 		assert_eq!(got, Ok(("", expected.to_string())),);
 	}
 }
+
+#[test]
+fn test_literal() {
+	let tests = &[
+		(".foobar", ".foobar"),
+		("\\\t\n\t ", "\t\n\t "),
+		("asdf asdf", "asdf"),
+	];
+
+	for (s, expected) in tests {
+		let got = literal::parse_literal::<()>(s)
+			.unwrap_or_else(|e| panic!("error parsing {}: {}", s, e));
+
+		assert_eq!(expected, &got.1);
+	}
+}
