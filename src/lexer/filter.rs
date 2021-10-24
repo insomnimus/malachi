@@ -8,7 +8,7 @@ fn parse_keyword(input: &str) -> IResult<&str, &str> {
 	recognize(pair(alpha1, many0(alt((alphanumeric1, tag("_"))))))(input)
 }
 
-fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
+pub fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
 	// The syntax for filters is exactly like a function call in rust.
 	// Arguments  are comma separated quoted strings.
 	let args = wrap_space0(separated_list0(wrap_space0(tag(",")), parse_string));
