@@ -1,3 +1,4 @@
+use nom::Parser;
 pub use nom::{
 	branch::alt,
 	bytes::complete::{
@@ -13,6 +14,7 @@ pub use nom::{
 	},
 	combinator::{
 		map,
+		opt,
 		recognize,
 		value,
 		verify,
@@ -38,11 +40,17 @@ where
 	delimited(multispace0, inner, multispace0)
 }
 
-pub fn _wrap_space0<'a, F: 'a, O, E: ParseError<&'a str>>(
+pub fn list0<'a, O, F>(
 	inner: F,
-) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+	sep: char,
+) -> impl FnMut(&'a str) -> IResult<&'a str, (Vec<O>, Option<char>)>
 where
-	F: FnMut(&'a str) -> IResult<&'a str, O, E>,
+	F: FnMut(&'a str) -> IResult<&'a str, O>,
 {
-	delimited(multispace0, inner, multispace0)
+	pair(
+		// Items.
+		separated_list0(wrap_space0(char(sep)), inner),
+		// Optional trailing separator.
+		opt(char(sep)),
+	)
 }
