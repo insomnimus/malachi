@@ -1,18 +1,11 @@
+mod filter;
 mod literal;
 mod prelude;
 mod string;
 #[cfg(test)]
 mod tests;
 
-pub enum Token {
-	Literal(String),
-	Less,
-	Greater,
-	LBracket,
-	RBracket,
-	LParen,
-	RParen,
-	String(String),
-	Comma,
-	Semicolon,
+pub struct Filter<'a> {
+	pub name: &'a str,
+	pub args: Vec<String>,
 }
