@@ -15,7 +15,7 @@ pub struct Filter<'a> {
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Capture<'a> {
 	pub name: &'a str,
-	pub Quantifier: Quantifier,
+	pub quantifier: Quantifier,
 	pub patterns: Vec<Pattern<'a>>,
 }
 
