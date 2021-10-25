@@ -2,7 +2,7 @@ use super::*;
 
 macro_rules! filter {
 	($name:literal) => {{
-		$crate::lexer::Filter{
+		$crate::parser::Filter{
 			name: $name,
 			args: Vec::new(),
 		}
@@ -11,7 +11,7 @@ macro_rules! filter {
 			let args = vec![$(
 			String::from($x),
 			)+];
-			$crate::lexer::Filter{
+			$crate::parser::Filter{
 				name: $name,
 				args,
 		}
@@ -24,6 +24,8 @@ fn test_string() {
 		("'hello'", "hello"),
 		(r"'what\'s love?'", "what's love?"),
 		(r"'baby don\'t hurt me\\'", "baby don't hurt me\\"),
+		("`'epico'`", "'epico'"),
+		(r"`yo\t\``", "yo\t`"),
 	];
 
 	for (s, expected) in tests {
@@ -52,10 +54,10 @@ fn test_literal() {
 fn test_filter() {
 	let tests = vec![
 		("asdf()", filter!("asdf")),
-		("wow_args('lol')", filter!("wow_args", "lol")),
+		("wow-args('lol')", filter!("wow-args", "lol")),
 		(
-			"super_duper_1('1',\t'2' , \n'3')",
-			filter!("super_duper_1", "1", "2", "3"),
+			"super-duper-1('1',\t'2' , \n'3')",
+			filter!("super-duper-1", "1", "2", "3"),
 		),
 	];
 
