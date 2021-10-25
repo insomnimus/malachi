@@ -26,53 +26,52 @@ macro_rules! filter {
 	}};
 }
 
-macro_rules! filters {
-	($($xs:tt);+ $(;)?) => {{
-		$crate::parser::Pattern(vec![
-		$(filter!($xs))* ,
-		])
-	}};
-	($name:literal, $($x:expr),* $(,)?) => {{
-		$crate::parser::Pattern(vec![filter!($name, $($x)*,)])
-	}};
+fn name_quan(s: &str) -> (&str, Quantifier) {
+	if let Some(x) = s.strip_suffix('*') {
+		(x, Quantifier::Many0)
+	} else if let Some(x) = s.strip_suffix('?') {
+		(x, Quantifier::MaybeOnce)
+	} else if let Some(x) = s.strip_suffix('+') {
+		(x, Quantifier::Many1)
+	} else {
+		(s, Quantifier::Once)
+	}
 }
 
 macro_rules! capture {
 	($name:literal) => {{
-		use $crate::parser::{Capture, Quantifier};
-		let (name, quantifier) = if let Some(x) = $name.strip_suffix("*") {
-			(x, Quantifier::Many0)
-		} else if let Some(x) = $name.strip_suffix("?") {
-			(x, Quantifier::MaybeOnce)
-		} else if let Some(x) = $name.strip_suffix("+") {
-			(x, Quantifier::Many1)
-		} else {
-			($name, Quantifier::Once)
-		};
-
-		Capture{
-			name,
-			quantifier,
-			patterns: Vec::new(),
-		}
-	}};
-	($name:literal; $($x:expr),* $(,)?) => {{
-		use $crate::parser::{Capture, Quantifier};
-		let (name, quantifier) = if let Some(x) = $name.strip_suffix("*") {
-			(x, Quantifier::Many0)
-		} else if let Some(x) = $name.strip_suffix("?") {
-			(x, Quantifier::MaybeOnce)
-		} else if let Some(x) = $name.strip_suffix("+") {
-			(x, Quantifier::Many1)
-		} else {
-			($name, Quantifier::Once)
-		};
-
+		let (name, quantifier) = name_quan($name);
 		Capture {
 			name,
 			quantifier,
-			patterns: vec![ $($x)* ,],
+			patterns: vec![],
 		}
+	}};
+	// Only 1 pattern, arguments are filters
+	($name:literal: $($filter:expr),* $(,)?) => {{
+		let (name, quantifier) = name_quan($name);
+		Capture {
+			name,
+			quantifier,
+			patterns: vec![Pattern(vec![
+			$($filter)* ,
+			])],
+		}
+	}};
+	// Multiple patterns, arguments are patterns
+	($name:literal; $($pattern:expr);* $(;)?) => {{
+		let (name, quantifier) = name_quan($name);
+		Pattern {
+			name,
+			quantifier,
+			patterns: vec![$($pattern)* ,],
+		}
+	}};
+}
+
+macro_rules! pattern {
+	($($filter:expr),* $(;)?) => {{
+		Pattern(vec![$($filter)* ,])
 	}};
 }
 
@@ -133,7 +132,7 @@ fn test_capture() {
 		("<*>", capture!("*")),
 		(
 			"<flags+: starts(`--`),>",
-			capture!("flags+"; filters!("starts", "--")),
+			capture!("flags+": filter!("starts", "--")),
 		),
 	];
 
