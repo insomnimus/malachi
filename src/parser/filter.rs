@@ -4,7 +4,7 @@ use super::{
 	Filter,
 };
 
-pub fn parse_keyword(input: &str) -> IResult<&str, &str> {
+fn parse_keyword(input: &str) -> IResult<&str, &str> {
 	recognize(pair(alpha1, many0(alt((alphanumeric1, tag("-"))))))(input)
 }
 
@@ -16,5 +16,5 @@ pub fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
 	let args = delimited(char('('), args, char(')'));
 
 	let parser = pair(parse_keyword, args);
-	map(parser, |(name, (args, _))| Filter { name, args })(input)
+	map(parser, |(name, args)| Filter { name, args })(input)
 }

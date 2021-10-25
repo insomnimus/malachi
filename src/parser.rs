@@ -1,3 +1,4 @@
+mod capture;
 mod filter;
 mod literal;
 mod prelude;

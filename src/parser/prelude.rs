@@ -4,6 +4,7 @@ pub use nom::{
 		is_not,
 		tag,
 		take_till,
+		take_while,
 	},
 	character::complete::{
 		alpha1,
@@ -16,6 +17,7 @@ pub use nom::{
 		map,
 		opt,
 		recognize,
+		success,
 		value,
 		verify,
 	},
@@ -29,6 +31,7 @@ pub use nom::{
 		delimited,
 		pair,
 		preceded,
+		separated_pair,
 	},
 	IResult,
 };
@@ -40,17 +43,17 @@ where
 	delimited(multispace0, inner, multispace0)
 }
 
-pub fn list0<'a, O, F>(
-	inner: F,
-	sep: char,
-) -> impl FnMut(&'a str) -> IResult<&'a str, (Vec<O>, Option<char>)>
+pub fn list0<'a, O, F>(inner: F, sep: char) -> impl FnMut(&'a str) -> IResult<&'a str, Vec<O>>
 where
 	F: FnMut(&'a str) -> IResult<&'a str, O>,
 {
-	pair(
-		// Items.
-		separated_list0(wrap_space0(char(sep)), inner),
-		// Optional trailing separator.
-		opt(char(sep)),
+	map(
+		pair(
+			// Items.
+			separated_list0(wrap_space0(char(sep)), inner),
+			// Optional trailing separator.
+			opt(char(sep)),
+		),
+		|(xs, ..)| xs,
 	)
 }
