@@ -61,3 +61,18 @@ where
 		|(xs, ..)| xs,
 	)
 }
+
+pub fn list1<'a, O, F>(inner: F, sep: char) -> impl FnMut(&'a str) -> IResult<&'a str, Vec<O>>
+where
+	F: FnMut(&'a str) -> IResult<&'a str, O>,
+{
+	map(
+		pair(
+			// Items.
+			separated_list1(wrap_space0(char(sep)), inner),
+			// Optional trailing separator.
+			opt(char(sep)),
+		),
+		|(xs, ..)| xs,
+	)
+}

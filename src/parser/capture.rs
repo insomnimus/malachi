@@ -3,7 +3,6 @@ use super::{
 	prelude::*,
 	Capture,
 	Filter,
-	List,
 	Pattern,
 	Quantifier,
 };
@@ -36,7 +35,7 @@ fn parse_name_quantifier(input: &'_ str) -> IResult<&'_ str, (&'_ str, Quantifie
 }
 
 fn parse_filters(input: &'_ str) -> IResult<&'_ str, Vec<Filter<'_>>> {
-	list0(parse_filter, ',')(input)
+	list1(parse_filter, ',')(input)
 }
 
 pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
@@ -73,8 +72,8 @@ pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
 	)(input)
 }
 
-pub fn parse_list(input: &'_ str) -> IResult<&'_ str, List<'_>> {
-	let body = map(many0(wrap_space0(parse_capture)), List);
+pub fn parse_list(input: &'_ str) -> IResult<&'_ str, Vec<Capture<'_>>> {
+	let body = many0(wrap_space0(parse_capture));
 
 	delimited(
 		// Lists start with `[`.

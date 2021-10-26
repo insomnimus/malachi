@@ -1,5 +1,16 @@
 use super::*;
 
+macro_rules! pretty_eq {
+	($left:expr, $right:expr) => {{
+		if !$left.eq(&$right) {
+			panic!(
+				"assertion failed: left == right\nleft: {}\nright: {}",
+				&$left, &$right
+			);
+		}
+	}};
+}
+
 fn lit(s: &str) -> Segment {
 	Segment::Text(String::from(s))
 }
@@ -81,7 +92,7 @@ macro_rules! pattern {
 
 macro_rules! captures {
 	($($capture:expr),* $(,)?) => {{
-		List(vec![ $($capture),* ])
+		Segment::List(vec![ $($capture),* ])
 	}};
 }
 
@@ -96,6 +107,12 @@ macro_rules! cap {
 			Segment::Capture(capture!($name; $($pattern);* ))
 		}};
 	}
+
+macro_rules! caps {
+	($($x : expr), + $(,) ?) => {{
+		Segment::List(vec![ $($x),* ])
+	}};
+}
 
 #[test]
 fn test_string() {
@@ -175,7 +192,7 @@ fn test_list() {
 	<second: foo(`a`)>
 	<third?: bar(`ünıcöde`); empty()>
 	]",
-		captures![
+		vec![
 			capture!("first*"),
 			capture!("second": filter!("foo", "a")),
 			capture!("third?"; pattern!(filter!("bar", "ünıcöde")); pattern!(filter!("empty"))),
@@ -189,36 +206,70 @@ fn test_list() {
 }
 
 #[test]
-fn test_command() {
-	let tests = vec![(
-		r".bet <amount: is(`digits`)>",
-		vec![lit(".bet"), cap!("amount": filter!("is", "digits"))],
-	)];
-
-	for (s, expected) in tests {
-		let got = check!(parse_command, s);
-		assert_eq!("", got.0, "not all of the text was parsed");
-		assert_eq!(expected, got.1);
-	}
-}
-
-#[test]
 fn test_segment() {
 	let tests = vec![
 		(".lmao 123", lit(".lmao")),
 		("<lol>", cap!("lol")),
 		(
 			"[<lol1> <lol2> <lol3>]",
-			Segment::List(captures![
-				capture!("lol1"),
-				capture!("lol2"),
-				capture!("lol3"),
-			]),
+			captures![capture!("lol1"), capture!("lol2"), capture!("lol3"),],
 		),
 	];
 
 	for (s, expected) in tests {
 		let got = check!(command::parse_segment, s);
 		assert_eq!(expected, got.1);
+	}
+}
+
+#[test]
+fn test_command() {
+	macro_rules! test {
+		($s:literal| $($items:expr),* $(,)?) => {{
+			($s, vec![ $($items),* ])
+		}};
+	}
+
+	let tests = vec![
+		// first
+		test! {r".bet <amount: is(`digits`)>" |
+			lit(".bet"),
+			cap!("amount": filter!("is", "digits")),
+		},
+		// second
+		test! { "?play
+[
+	<mode?: starts(`mode=`)>
+	<edition?: starts(`edition=`)>
+]
+<code:
+	starts('`'), ends('`');
+	starts('```'), ends('```');
+>" |
+				lit("?play"),
+				caps![
+				capture!("mode?": filter!("starts", "mode=")),
+				capture!("edition?": filter!("starts", "edition=")),
+				],
+		cap!("code";
+		pattern!(filter!("starts", "`"), filter!("ends", "`"));
+		pattern!(filter!("starts", "```"), filter!("ends", "```"));
+		),
+				},
+	];
+
+	for (s, expected) in tests {
+		let got = check!(parse_command, s);
+		assert_eq!("", got.0, "not all of the text was parsed");
+		if expected.len() != got.1.len() {
+			panic!(
+				"different lengths: expected {}, got {}",
+				expected.len(),
+				got.1.len()
+			);
+		}
+		for (left, right) in expected.iter().zip(got.1.iter()) {
+			pretty_eq!(left, right);
+		}
 	}
 }
