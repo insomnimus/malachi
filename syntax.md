@@ -32,9 +32,9 @@ Since the patterns are wrapped in `[]`, they can be matched out of order.
 ```
 .bible
 [
-	book: starts("book=");
-	chapter?: starts("chapter=");
-	verse?: starts("verse=");
+	<book: starts("book=")>
+	<chapter?: starts("chapter=")>
+	<verse?: starts("verse=")>
 ]
 ```
 

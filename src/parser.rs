@@ -29,3 +29,6 @@ pub enum Quantifier {
 	Many0,
 	Many1,
 }
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct CaptureList<'a>(pub Vec<Capture<'a>>);

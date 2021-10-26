@@ -54,24 +54,30 @@ macro_rules! capture {
 			name,
 			quantifier,
 			patterns: vec![Pattern(vec![
-			$($filter)* ,
+			$($filter),*
 			])],
 		}
 	}};
 	// Multiple patterns, arguments are patterns
 	($name:literal; $($pattern:expr);* $(;)?) => {{
 		let (name, quantifier) = name_quan($name);
-		Pattern {
+		Capture {
 			name,
 			quantifier,
-			patterns: vec![$($pattern)* ,],
+			patterns: vec![$($pattern),*],
 		}
 	}};
 }
 
 macro_rules! pattern {
 	($($filter:expr),* $(;)?) => {{
-		Pattern(vec![$($filter)* ,])
+		Pattern(vec![$($filter),* ])
+	}};
+}
+
+macro_rules! captures {
+	($($capture:expr),* $(,)?) => {{
+		CaptureList(vec![ $($capture),* ])
 	}};
 }
 
@@ -142,5 +148,26 @@ fn test_capture() {
 		let got = check!(capture::parse_capture, s);
 
 		assert_eq!(got.1, expected);
+	}
+}
+
+#[test]
+fn test_capture_list() {
+	let tests = vec![(
+		"[
+	<first*>
+	<second: foo(`a`)>
+	<third?: bar(`ünıcöde`); empty()>
+	]",
+		captures![
+			capture!("first*"),
+			capture!("second": filter!("foo", "a")),
+			capture!("third?"; pattern!(filter!("bar", "ünıcöde")); pattern!(filter!("empty"))),
+		],
+	)];
+
+	for (s, expected) in tests {
+		let got = check!(capture::parse_capture_list, s);
+		assert_eq!(expected, got.1);
 	}
 }

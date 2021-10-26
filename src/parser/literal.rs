@@ -18,6 +18,7 @@ fn parse_esc_char(input: &str) -> IResult<&str, char> {
 			value('\\', char('\\')),
 			value('\n', char('n')),
 			value('<', char('<')),
+			value('[', char('[')),
 			value('\r', char('r')),
 			value('\t', char('t')),
 		)),

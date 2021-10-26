@@ -2,6 +2,7 @@ use super::{
 	filter::parse_filter,
 	prelude::*,
 	Capture,
+	CaptureList,
 	Filter,
 	Pattern,
 	Quantifier,
@@ -69,5 +70,18 @@ pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
 		wrap_space0(alt((full, bare))),
 		// Finish with `>`.
 		char('>'),
+	)(input)
+}
+
+pub fn parse_capture_list(input: &'_ str) -> IResult<&'_ str, CaptureList<'_>> {
+	let body = map(many0(wrap_space0(parse_capture)), CaptureList);
+
+	delimited(
+		// Lists start with `[`.
+		char('['),
+		// The body is any number of captures.
+		body,
+		// And terminated with `]`.
+		char(']'),
 	)(input)
 }
