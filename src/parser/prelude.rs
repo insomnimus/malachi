@@ -12,6 +12,7 @@ pub use nom::{
 		char,
 		multispace0,
 		multispace1,
+		space1,
 	},
 	combinator::{
 		map,
@@ -24,6 +25,7 @@ pub use nom::{
 	error::ParseError,
 	multi::{
 		fold_many0,
+		fold_many1,
 		many0,
 		separated_list0,
 	},

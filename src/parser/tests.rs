@@ -95,14 +95,16 @@ fn test_string() {
 fn test_literal() {
 	let tests = &[
 		(".foobar", ".foobar"),
-		("\\\t\n\t ", "\t\n\t "),
+		("\\\t \n these are not parsed!", "\t "),
 		("asdf asdf", "asdf"),
+		(r"\t\n\t\  wow!", "\t\n\t  wow!"),
 	];
 
 	for (s, expected) in tests {
 		let got = check!(literal::parse_literal, s);
+		let expected = String::from(*expected);
 
-		assert_eq!(expected, &got.1);
+		assert_eq!(&expected, &got.1);
 	}
 }
 

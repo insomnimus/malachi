@@ -22,7 +22,7 @@ fn literal_parser<'a>(quo: char) -> impl FnMut(&'a str) -> IResult<&'a str, &'a 
 	verify(not_quote_slash, |s: &str| !s.is_empty())
 }
 
-enum Fragment<'a> {
+pub enum Fragment<'a> {
 	Literal(&'a str),
 	Char(char),
 }
