@@ -1,10 +1,13 @@
 mod capture;
+mod command;
 mod filter;
 mod literal;
 mod prelude;
 mod string;
 #[cfg(test)]
 mod tests;
+
+pub use command::parse_command;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Filter<'a> {
@@ -31,4 +34,11 @@ pub enum Quantifier {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct CaptureList<'a>(pub Vec<Capture<'a>>);
+pub struct List<'a>(pub Vec<Capture<'a>>);
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Segment<'a> {
+	Text(String),
+	Capture(Capture<'a>),
+	List(List<'a>),
+}

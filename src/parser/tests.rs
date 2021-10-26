@@ -1,9 +1,13 @@
 use super::*;
 
+fn lit(s: &str) -> Segment {
+	Segment::Text(String::from(s))
+}
+
 macro_rules! check {
 	($fn:expr, $arg:expr) => {{
 		($fn)($arg).unwrap_or_else(|e| {
-			panic!("{}({:?}) returned: {}", stringify!($fn), $arg, e);
+			panic!("\n{}({:?})\nreturned:\n{:?}", stringify!($fn), $arg, e);
 		})
 	}};
 }
@@ -77,9 +81,21 @@ macro_rules! pattern {
 
 macro_rules! captures {
 	($($capture:expr),* $(,)?) => {{
-		CaptureList(vec![ $($capture),* ])
+		List(vec![ $($capture),* ])
 	}};
 }
+
+macro_rules! cap {
+		($name:literal) => {{
+			Segment::Capture(capture!($name))
+		}};
+		($name:literal: $($filter:expr),* $(,)?) => {{
+			Segment::Capture(capture!($name: $($filter),*))
+		}};
+		($name:literal; $($pattern:expr);* $(;)?) => {{
+			Segment::Capture(capture!($name; $($pattern);* ))
+		}};
+	}
 
 #[test]
 fn test_string() {
@@ -152,7 +168,7 @@ fn test_capture() {
 }
 
 #[test]
-fn test_capture_list() {
+fn test_list() {
 	let tests = vec![(
 		"[
 	<first*>
@@ -167,7 +183,42 @@ fn test_capture_list() {
 	)];
 
 	for (s, expected) in tests {
-		let got = check!(capture::parse_capture_list, s);
+		let got = check!(capture::parse_list, s);
+		assert_eq!(expected, got.1);
+	}
+}
+
+#[test]
+fn test_command() {
+	let tests = vec![(
+		r".bet <amount: is(`digits`)>",
+		vec![lit(".bet"), cap!("amount": filter!("is", "digits"))],
+	)];
+
+	for (s, expected) in tests {
+		let got = check!(parse_command, s);
+		assert_eq!("", got.0, "not all of the text was parsed");
+		assert_eq!(expected, got.1);
+	}
+}
+
+#[test]
+fn test_segment() {
+	let tests = vec![
+		(".lmao 123", lit(".lmao")),
+		("<lol>", cap!("lol")),
+		(
+			"[<lol1> <lol2> <lol3>]",
+			Segment::List(captures![
+				capture!("lol1"),
+				capture!("lol2"),
+				capture!("lol3"),
+			]),
+		),
+	];
+
+	for (s, expected) in tests {
+		let got = check!(command::parse_segment, s);
 		assert_eq!(expected, got.1);
 	}
 }

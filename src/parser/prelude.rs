@@ -28,6 +28,7 @@ pub use nom::{
 		fold_many1,
 		many0,
 		separated_list0,
+		separated_list1,
 	},
 	sequence::{
 		delimited,
@@ -35,8 +36,9 @@ pub use nom::{
 		preceded,
 		separated_pair,
 	},
-	IResult,
 };
+
+pub type IResult<I, O, E = nom::error::VerboseError<I>> = Result<(I, O), nom::Err<E>>;
 
 pub fn wrap_space0<'a, F: 'a, O>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O>
 where
