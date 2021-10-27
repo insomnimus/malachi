@@ -10,6 +10,10 @@ mod tests;
 use std::fmt;
 
 pub use command::parse_command;
+use nom::error::{
+	VerboseError,
+	VerboseErrorKind,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Filter<'a> {
@@ -130,3 +134,49 @@ impl fmt::Display for Quantifier {
 		}
 	}
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub struct Error {
+	pub line: usize,
+	pub col: usize,
+	pub msg: &'static str,
+}
+
+impl Error {
+	fn from_nom(e: VerboseError<&str>, s: &str) -> Self {
+		let (remaining, msg): (&str, &str) = e
+			.errors
+			.iter()
+			.filter_map(|(rem, kind)| match kind {
+				VerboseErrorKind::Context(msg) => Some((rem, msg)),
+				_ => None,
+			})
+			.next()
+			.map(|(&x, &y)| (x, y))
+			.unwrap_or_else(|| {
+				e.errors
+					.last()
+					.map(|(rem, _)| (*rem, "syntax error near"))
+					.unwrap_or_else(|| (s, "unidentified syntax error"))
+			});
+
+		let parsed = s.strip_suffix(remaining).unwrap_or("");
+
+		let mut line = 0_usize;
+		let mut col = 0_usize;
+		for ln in parsed.lines() {
+			line += 1;
+			col = ln.len();
+		}
+
+		Self { line, col, msg }
+	}
+}
+
+impl fmt::Display for Error {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "line {}, column {}: {}", self.line, self.col, self.msg)
+	}
+}
+
+impl std::error::Error for Error {}

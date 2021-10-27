@@ -1,3 +1,5 @@
+use nom::Finish;
+
 use super::{
 	capture::{
 		parse_capture,
@@ -5,6 +7,7 @@ use super::{
 	},
 	literal::parse_literal,
 	prelude::*,
+	Error,
 	Segment,
 };
 
@@ -19,6 +22,13 @@ pub fn parse_segment(input: &'_ str) -> IResult<&'_ str, Segment<'_>> {
 	))(input)
 }
 
-pub fn parse_command(input: &'_ str) -> IResult<&'_ str, Vec<Segment<'_>>> {
+fn parse_cmd(input: &'_ str) -> IResult<&'_ str, Vec<Segment<'_>>> {
 	many0(wrap_space0(parse_segment))(input)
+}
+
+pub fn parse_command(input: &'_ str) -> Result<Vec<Segment<'_>>, Error> {
+	parse_cmd(input)
+		.finish()
+		.map_err(|e| Error::from_nom(e, input))
+		.map(|tup| tup.1)
 }

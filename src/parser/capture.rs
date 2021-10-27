@@ -24,18 +24,24 @@ fn parse_name_quantifier(input: &'_ str) -> IResult<&'_ str, (&'_ str, Quantifie
 		success(Quantifier::Once),
 	));
 
-	separated_pair(
-		// The name.
-		name,
-		// Any number of whitespace.
-		multispace0,
-		// The quantifier .
-		quan,
+	context(
+		"invalid identifier name",
+		separated_pair(
+			// The name.
+			name,
+			// Any number of whitespace.
+			multispace0,
+			// The quantifier .
+			quan,
+		),
 	)(input)
 }
 
 fn parse_filters(input: &'_ str) -> IResult<&'_ str, Vec<Filter<'_>>> {
-	list1(parse_filter, ',')(input)
+	context(
+		"missing a comma separated list of filters",
+		list1(parse_filter, ','),
+	)(input)
 }
 
 pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
@@ -66,21 +72,23 @@ pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
 		// Starts with `<`.
 		char('<'),
 		// Ignore whitespace, get the body.
-		wrap_space0(alt((full, bare))),
+		cut(context(
+			"invalid capture syntax",
+			wrap_space0(alt((full, bare))),
+		)),
 		// Finish with `>`.
-		char('>'),
+		context("unclosed delimiter: '>'", char('>')),
 	)(input)
 }
 
 pub fn parse_list(input: &'_ str) -> IResult<&'_ str, Vec<Capture<'_>>> {
 	let body = many0(wrap_space0(parse_capture));
-
 	delimited(
 		// Lists start with `[`.
 		char('['),
 		// The body is any number of captures.
 		body,
 		// And terminated with `]`.
-		char(']'),
+		context("missing closing delimiter: ']'", char(']')),
 	)(input)
 }
