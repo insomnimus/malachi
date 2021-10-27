@@ -15,10 +15,10 @@ pub(crate) use err;
 use crate::parser::Quantifier;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
-pub enum Match<'c, 't> {
+pub enum Match<'a> {
 	None,
-	Single { name: &'c str, value: &'t str },
-	Multiple { name: &'c str, values: Vec<&'t str> },
+	Once(&'a str),
+	Many(Vec<&'a str>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

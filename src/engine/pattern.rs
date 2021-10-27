@@ -1,4 +1,5 @@
 use super::{
+	err,
 	IResult,
 	Pattern,
 };
@@ -8,7 +9,6 @@ impl<'a> Pattern {
 	pub fn parse(&self, input: &'a str) -> IResult<&'a str, &'a str> {
 		match (self.starts.as_deref(), self.ends.as_deref()) {
 			(Some(starts), Some(ends)) => {
-				// let body = self.is.parser(ends);
 				let body = take_until(ends);
 				delimited(tag(starts), body, tag(ends))(input)
 			}
@@ -27,5 +27,19 @@ impl<'a> Pattern {
 			}
 			(None, None) => take_while(|c: char| !c.is_whitespace())(input),
 		}
+	}
+}
+
+pub fn any_of<'a, 'b>(
+	patterns: &'b [Pattern],
+) -> impl 'b + FnMut(&'a str) -> IResult<&'a str, &'a str> {
+	move |input: &'a str| {
+		for p in patterns {
+			let res = p.parse(input);
+			if res.is_ok() {
+				return res;
+			}
+		}
+		err!()
 	}
 }

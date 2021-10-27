@@ -39,7 +39,7 @@ macro_rules! pattern {
 }
 
 #[test]
-fn test_single() {
+fn test_once() {
 	let tests = vec![
 		("foobar  ", "bar", capture!("name"; pattern!("foo"))),
 		(
@@ -56,10 +56,7 @@ fn test_single() {
 
 	for (s, expected, cap) in tests {
 		let got = cap.parse(s).unwrap().1;
-		let expected = Match::Single {
-			name: "name",
-			value: expected,
-		};
-		assert_eq!(expected, got,);
+		let expected = Match::Once(expected);
+		assert_eq!(expected, got);
 	}
 }
