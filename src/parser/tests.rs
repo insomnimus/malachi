@@ -260,15 +260,14 @@ fn test_command() {
 
 	for (s, expected) in tests {
 		let got = check!(parse_command, s);
-		assert_eq!("", got.0, "not all of the text was parsed");
-		if expected.len() != got.1.len() {
+		if expected.len() != got.len() {
 			panic!(
 				"different lengths: expected {}, got {}",
 				expected.len(),
-				got.1.len()
+				got.len()
 			);
 		}
-		for (left, right) in expected.iter().zip(got.1.iter()) {
+		for (left, right) in expected.iter().zip(got.iter()) {
 			pretty_eq!(left, right);
 		}
 	}

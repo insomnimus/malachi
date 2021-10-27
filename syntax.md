@@ -62,5 +62,4 @@ It does not specify any pattern so the defaults apply:
 -	`starts(prefix)`: The match must start with `prefix`.
 -	`ends(suffix)`: The match must end with `suffix`.
 -	`is(specifier)`: The match is `specifier`. Valid values are "digits", "numeric", "alphabetic", "alphanumeric".
--	`separator(text)`: Only applies to matches with possibly multiple values. Specifies the separator.
 -	`no_trim()`: Do not trim the match with `starts()` and `ends()`.

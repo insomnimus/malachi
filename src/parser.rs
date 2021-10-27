@@ -2,7 +2,7 @@ mod capture;
 mod command;
 mod filter;
 mod literal;
-mod prelude;
+pub mod prelude;
 mod string;
 #[cfg(test)]
 mod tests;

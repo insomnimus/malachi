@@ -3,13 +3,16 @@ pub use nom::{
 	bytes::complete::{
 		is_not,
 		tag,
+		take,
 		take_till,
+		take_until,
 		take_while,
 	},
 	character::complete::{
 		alpha1,
 		alphanumeric1,
 		char,
+		digit1,
 		multispace0,
 		multispace1,
 		space1,
@@ -31,6 +34,7 @@ pub use nom::{
 		fold_many0,
 		fold_many1,
 		many0,
+		many1,
 		separated_list0,
 		separated_list1,
 	},
@@ -39,6 +43,7 @@ pub use nom::{
 		pair,
 		preceded,
 		separated_pair,
+		terminated,
 	},
 };
 
