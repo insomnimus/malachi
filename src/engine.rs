@@ -45,7 +45,7 @@ impl<'c, 't> Args<'c, 't> {
 		self.vals.get(name).unwrap_or(&Match::None)
 	}
 
-	pub fn get_rest(&'c self) -> Option<&'t str> {
+	pub fn rest(&'c self) -> Option<&'t str> {
 		if self.rest.is_empty() {
 			None
 		} else {
@@ -80,7 +80,7 @@ impl<'c, 't> Command {
 				Segment::Capture(c) => {
 					// The next segment must match.
 					let next = &self.0[i + 1];
-					let good = move |s: &str| -> bool { next.is_match(s) };
+					let good = move |s: &str| -> bool { !next.is_match(s) };
 					let (new_rem, matches) = c.get_match(remaining, good).ok()?;
 					remaining = new_rem;
 					if !matches.is_none() {

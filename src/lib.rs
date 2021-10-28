@@ -2,6 +2,8 @@ mod compiler;
 mod engine;
 pub mod errors;
 mod parser;
+#[cfg(test)]
+mod tests;
 
 use std::fmt;
 
