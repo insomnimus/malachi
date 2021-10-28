@@ -1,16 +1,18 @@
 use super::{
 	pattern,
-	Capture,
 	IResult,
 	Match,
 };
-use crate::parser::{
-	prelude::*,
-	Quantifier,
+use crate::{
+	compiler::Capture,
+	parser::{
+		prelude::*,
+		Quantifier,
+	},
 };
 
 impl Capture {
-	pub fn parse<'a>(&self, input: &'a str) -> IResult<&'a str, Match<'a>> {
+	pub fn get_match<'a>(&self, input: &'a str) -> IResult<&'a str, Match<'a>> {
 		if self.patterns.is_empty() {
 			let word = take_till(|c: char| c.is_whitespace());
 			return match self.quantifier {

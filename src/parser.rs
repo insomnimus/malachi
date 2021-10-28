@@ -49,13 +49,13 @@ pub enum Segment<'a> {
 impl<'a> fmt::Display for Segment<'a> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Self::Text(s) => f.write_str(&s),
+			Self::Text(s) => f.write_str(s),
 			Self::Capture(c) => write!(f, "{}", &c),
 			Self::List(cs) => {
 				if cs.is_empty() {
 					f.write_str("[]")
 				} else {
-					writeln!(f, "[");
+					writeln!(f, "[")?;
 
 					for c in cs {
 						writeln!(f, "  {}", c)?;
@@ -135,14 +135,15 @@ impl fmt::Display for Quantifier {
 	}
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Error {
-	pub line: usize,
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct SyntaxError {
+	pub line_no: usize,
 	pub col: usize,
+	pub line: String,
 	pub msg: &'static str,
 }
 
-impl Error {
+impl SyntaxError {
 	fn from_nom(e: VerboseError<&str>, s: &str) -> Self {
 		let (remaining, msg): (&str, &str) = e
 			.errors
@@ -162,21 +163,43 @@ impl Error {
 
 		let parsed = s.strip_suffix(remaining).unwrap_or("");
 
-		let mut line = 0_usize;
+		let mut line_no = 0_usize;
 		let mut col = 0_usize;
 		for ln in parsed.lines() {
-			line += 1;
+			line_no += 1;
 			col = ln.len();
 		}
+		let line = s.lines().nth(line_no).unwrap().to_string();
 
-		Self { line, col, msg }
+		Self {
+			line,
+			line_no,
+			col,
+			msg,
+		}
 	}
 }
 
-impl fmt::Display for Error {
+impl fmt::Display for SyntaxError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "line {}, column {}: {}", self.line, self.col, self.msg)
+		if !self.line.is_empty() && f.alternate() && self.col <= self.line.len() {
+			let mut pad = String::with_capacity(self.col);
+			pad.extend(
+				self.line
+					.chars()
+					.take(self.col.checked_sub(1).unwrap_or_default())
+					.map(|c| if c == '\t' { '\t' } else { ' ' }),
+			);
+			pad.push('^');
+			write!(
+				f,
+				"{}:{}: {}\n|\n| {}\n| {}",
+				self.line_no, self.col, self.msg, &self.line, pad
+			)
+		} else {
+			write!(f, "{}:{}: {}", self.line_no, self.col, self.msg)
+		}
 	}
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for SyntaxError {}

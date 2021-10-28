@@ -7,8 +7,8 @@ use super::{
 	},
 	literal::parse_literal,
 	prelude::*,
-	Error,
 	Segment,
+	SyntaxError,
 };
 
 pub fn parse_segment(input: &'_ str) -> IResult<&'_ str, Segment<'_>> {
@@ -26,9 +26,9 @@ fn parse_cmd(input: &'_ str) -> IResult<&'_ str, Vec<Segment<'_>>> {
 	many0(wrap_space0(parse_segment))(input)
 }
 
-pub fn parse_command(input: &'_ str) -> Result<Vec<Segment<'_>>, Error> {
+pub fn parse_command(input: &'_ str) -> Result<Vec<Segment<'_>>, SyntaxError> {
 	parse_cmd(input)
 		.finish()
-		.map_err(|e| Error::from_nom(e, input))
+		.map_err(|e| SyntaxError::from_nom(e, input))
 		.map(|tup| tup.1)
 }

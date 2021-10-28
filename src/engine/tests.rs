@@ -1,4 +1,11 @@
 use super::*;
+use crate::{
+	compiler::{
+		Capture,
+		Pattern,
+	},
+	parser::Quantifier,
+};
 
 fn name_quan(s: &str) -> (&str, Quantifier) {
 	if let Some(x) = s.strip_suffix('*') {
@@ -55,7 +62,7 @@ fn test_once() {
 	];
 
 	for (s, expected, cap) in tests {
-		let got = cap.parse(s).unwrap().1;
+		let got = cap.get_match(s).unwrap().1;
 		let expected = Match::Once(expected);
 		assert_eq!(expected, got);
 	}

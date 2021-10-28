@@ -1,12 +1,14 @@
 use super::{
 	err,
 	IResult,
-	Pattern,
 };
-use crate::parser::prelude::*;
+use crate::{
+	compiler::Pattern,
+	parser::prelude::*,
+};
 
-impl<'a> Pattern {
-	pub fn parse(&self, input: &'a str) -> IResult<&'a str, &'a str> {
+impl Pattern {
+	pub fn parse<'a>(&self, input: &'a str) -> IResult<&'a str, &'a str> {
 		match (self.starts.as_deref(), self.ends.as_deref()) {
 			(Some(starts), Some(ends)) => {
 				let body = take_until(ends);
