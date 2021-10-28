@@ -97,8 +97,7 @@ impl<'a> TryFrom<parser::Segment<'a>> for Segment {
 				.into_iter()
 				.map(Capture::try_from)
 				.collect::<Result<Vec<_>, _>>()
-				.map(Self::List)
-				.map_err(|e| e.into()),
+				.map(Self::List),
 		}
 	}
 }

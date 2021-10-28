@@ -66,7 +66,7 @@ impl<'c, 't> Command {
 		for (i, seg) in self.0.iter().enumerate() {
 			match seg {
 				Segment::Text(lit) => {
-					let (new_rem, _) = literal::match_literal(&lit, remaining).ok()?;
+					let (new_rem, _) = literal::match_literal(lit, remaining).ok()?;
 					remaining = new_rem;
 				}
 				Segment::Capture(c) if i == self.0.len() - 1 => {

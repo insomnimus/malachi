@@ -69,7 +69,7 @@ impl Capture {
 				let mut word = preceded(multispace0, take_till(|c: char| c.is_whitespace()));
 				let (mut remaining, val) = word(input)?;
 				let mut vals = vec![val];
-				while remaining != "" && good(remaining) {
+				while !remaining.is_empty() && good(remaining) {
 					if let Ok((new_rem, val)) = word(remaining) {
 						vals.push(val);
 						remaining = new_rem;
@@ -85,7 +85,7 @@ impl Capture {
 				let mut parser = preceded(multispace0, any_of(&self.patterns));
 				let (mut remaining, val) = parser(input)?;
 				let mut vals = vec![val];
-				while remaining != "" && good(remaining) {
+				while !remaining.is_empty() && good(remaining) {
 					if let Ok((new_rem, val)) = parser(remaining) {
 						vals.push(val);
 						remaining = new_rem;
@@ -103,7 +103,7 @@ impl Capture {
 				);
 				let mut vals = Vec::new();
 				let mut remaining = input;
-				while remaining != "" && good(remaining) {
+				while !remaining.is_empty() && good(remaining) {
 					if let Ok((new_rem, val)) = parser(remaining) {
 						vals.push(val);
 						remaining = new_rem;
@@ -122,7 +122,7 @@ impl Capture {
 				let mut parser = preceded(multispace0, any_of(&self.patterns));
 				let mut vals = Vec::new();
 				let mut remaining = input;
-				while remaining != "" && good(remaining) {
+				while !remaining.is_empty() && good(remaining) {
 					if let Ok((new_rem, val)) = parser(remaining) {
 						vals.push(val);
 						remaining = new_rem;

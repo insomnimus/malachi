@@ -1,16 +1,16 @@
 mod compiler;
 mod engine;
+pub mod errors;
 mod parser;
 
 use std::fmt;
 
-use crate::{
-	compiler::{
-		FilterError,
-		RuleError,
-	},
-	parser::SyntaxError,
+pub use compiler::Command;
+pub use engine::{
+	Args,
+	Match,
 };
+use errors::*;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Error {
