@@ -14,7 +14,8 @@ use crate::{
 	Error,
 };
 
-pub struct Command(Vec<Segment>);
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Command(pub(crate) Vec<Segment>);
 
 impl Command {
 	pub fn new(s: &str) -> Result<Self, Error> {

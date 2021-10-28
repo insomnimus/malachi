@@ -1,8 +1,5 @@
 use super::{
-	pattern::{
-		self,
-		any_of,
-	},
+	pattern::any_of,
 	IResult,
 	Match,
 };
@@ -14,62 +11,40 @@ use crate::{
 	},
 };
 
-impl Capture {
-	pub fn get_match<'a>(&self, input: &'a str) -> IResult<&'a str, Match<'a>> {
-		if self.patterns.is_empty() {
-			let word = take_till(|c: char| c.is_whitespace());
-			return match self.quantifier {
-				Quantifier::Once => map(verify(word, |s: &str| !s.is_empty()), Match::Once)(input),
-				Quantifier::MaybeOnce => alt((map(word, Match::Once), success(Match::None)))(input),
-				_ => unimplemented!(),
-			};
+fn try_match<'a, F, G>(input: &'a str, mut parser: F, mut good: G) -> IResult<&'a str, Match<'a>>
+where
+	F: FnMut(&'a str) -> IResult<&'a str, &'a str>,
+	G: FnMut(&'a str) -> bool,
+{
+	// Try consuming and see if it still works.
+	if let Ok((remaining, val)) = (parser)(input) {
+		if good(remaining) {
+			Ok((remaining, Match::Once(val)))
+		} else {
+			Ok((input, Match::None))
 		}
+	} else {
+		Ok((input, Match::None))
+	}
+}
 
-		match self.quantifier {
-			Quantifier::Once => map(pattern::any_of(&self.patterns), Match::Once)(input),
-			Quantifier::MaybeOnce => {
-				alt((
-					// try consuming it
-					map(pattern::any_of(&self.patterns), Match::Once),
-					// or, return success
-					success(Match::None),
-				))(input)
-			}
-			Quantifier::Many1 => {
-				map(
-					separated_list1(
-						// matches are space separated
-						multispace1,
-						// values
-						pattern::any_of(&self.patterns),
-					),
-					Match::Many,
-				)(input)
-			}
-			Quantifier::Many0 => {
-				let normal = map(
-					separated_list1(
-						// matches are space separated
-						multispace1,
-						// values
-						pattern::any_of(&self.patterns),
-					),
-					Match::Many,
-				);
-				alt((
-					// try consuming
-					normal,
-					// or, return none
-					success(Match::None),
-				))(input)
-			}
+impl Capture {
+	pub fn is_match(&self, input: &str) -> bool {
+		if matches!(self.quantifier, Quantifier::MaybeOnce | Quantifier::Many0) {
+			true
+		} else if self.patterns.is_empty() {
+			preceded::<_, _, _, super::error::Dummy, _, _>(multispace0, take(1_usize))(input)
+				.is_ok()
+		} else {
+			let parser = any_of(&self.patterns);
+			preceded(multispace0, parser)(input).is_ok()
 		}
 	}
 
 	/// Tries matching self.
 	// Patterns that may potentially match and those that can match multiple times
 	// are limited by the `good` function. `good() == false` will stop the match.
-	pub fn get_match_till<'a, F>(&self, input: &'a str, mut good: F) -> IResult<&'a str, Match<'a>>
+	pub fn get_match<'a, F>(&self, input: &'a str, mut good: F) -> IResult<&'a str, Match<'a>>
 	where
 		F: FnMut(&'a str) -> bool,
 	{
@@ -163,22 +138,5 @@ impl Capture {
 				Ok((remaining, vals))
 			}
 		}
-	}
-}
-
-fn try_match<'a, F, G>(input: &'a str, mut parser: F, mut good: G) -> IResult<&'a str, Match<'a>>
-where
-	F: FnMut(&'a str) -> IResult<&'a str, &'a str>,
-	G: FnMut(&'a str) -> bool,
-{
-	// Try consuming and see if it still works.
-	if let Ok((remaining, val)) = (parser)(input) {
-		if good(remaining) {
-			Ok((remaining, Match::Once(val)))
-		} else {
-			Ok((input, Match::None))
-		}
-	} else {
-		Ok((input, Match::None))
 	}
 }
