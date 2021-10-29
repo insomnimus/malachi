@@ -12,9 +12,12 @@ use std::collections::HashMap;
 
 pub(crate) use error::IResult;
 
-use crate::compiler::{
-	Command,
-	Segment,
+use crate::{
+	compiler::{
+		Command,
+		Segment,
+	},
+	Args,
 };
 macro_rules! err {
 	() => {{
@@ -27,18 +30,6 @@ pub(crate) use err;
 pub enum Match<'a> {
 	Once(&'a str),
 	Many(Vec<&'a str>),
-}
-
-#[derive(PartialEq, Eq, Clone)]
-pub struct Args<'c, 't> {
-	pub rest: &'t str,
-	pub vals: HashMap<&'c str, Match<'t>>,
-}
-
-impl<'c, 't> Args<'c, 't> {
-	pub fn get<'z: 't + 'c>(&'z self, name: &str) -> Option<&'z Match<'t>> {
-		self.vals.get(name)
-	}
 }
 
 impl<'c, 't> Command {

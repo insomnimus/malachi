@@ -1,5 +1,6 @@
 // This file is licensed under the terms of Apache-2.0 License.
 
+mod args;
 mod compiler;
 mod engine;
 pub mod errors;
@@ -9,11 +10,9 @@ mod tests;
 
 use std::fmt;
 
+pub use args::Args;
 pub use compiler::Command;
-pub use engine::{
-	Args,
-	Match,
-};
+pub use engine::Match;
 use errors::*;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
