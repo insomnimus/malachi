@@ -25,34 +25,19 @@ pub(crate) use err;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub enum Match<'a> {
-	None,
 	Once(&'a str),
 	Many(Vec<&'a str>),
 }
 
-impl<'a> Match<'a> {
-	pub fn is_none(&self) -> bool {
-		self == &Self::None
-	}
-}
-
 #[derive(PartialEq, Eq, Clone)]
 pub struct Args<'c, 't> {
-	pub(crate) rest: &'t str,
-	pub(crate) vals: HashMap<&'c str, Match<'t>>,
+	pub rest: &'t str,
+	pub vals: HashMap<&'c str, Match<'t>>,
 }
 
 impl<'c, 't> Args<'c, 't> {
-	pub fn get<'z: 't + 'c>(&'z self, name: &str) -> &'z Match<'z> {
-		self.vals.get(name).unwrap_or(&Match::None)
-	}
-
-	pub fn rest(&'c self) -> Option<&'t str> {
-		if self.rest.is_empty() {
-			None
-		} else {
-			Some(self.rest)
-		}
+	pub fn get<'z: 't + 'c>(&'z self, name: &str) -> Option<&'z Match<'t>> {
+		self.vals.get(name)
 	}
 }
 
@@ -75,7 +60,7 @@ impl<'c, 't> Command {
 					// No limitations on the amount of matches.
 					let (new_rem, matches) = c.get_match(remaining, |_| true).ok()?;
 					remaining = new_rem;
-					if !matches.is_none() {
+					if let Some(matches) = matches {
 						vals.insert(c.name.as_str(), matches);
 					}
 				}
@@ -85,7 +70,7 @@ impl<'c, 't> Command {
 					let good = move |s: &str| -> bool { !next.is_match(s) };
 					let (new_rem, matches) = c.get_match(remaining, good).ok()?;
 					remaining = new_rem;
-					if !matches.is_none() {
+					if let Some(matches) = matches {
 						vals.insert(c.name.as_str(), matches);
 					}
 				}

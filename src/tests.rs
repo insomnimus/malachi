@@ -93,8 +93,8 @@ fn test_match() {
 			let got = cmd.get_matches(input).unwrap();
 
 			assert_eq!(
-				expected.get("rest"),
-				got.rest().map(Match::Once).as_ref(),
+				expected.get("rest").or(Some(&Match::Once(""))),
+				Some(&Match::Once(got.rest)),
 				"trailing match is not equal",
 			);
 			for (key, val) in expected {
@@ -103,7 +103,7 @@ fn test_match() {
 				}
 				let got = got.get(key);
 
-				assert_eq!(&val, got);
+				assert_eq!(Some(&val), got);
 			}
 		}
 	}

@@ -13,7 +13,11 @@ use crate::{
 	},
 };
 
-fn try_match<'a, F, G>(input: &'a str, mut parser: F, mut good: G) -> IResult<&'a str, Match<'a>>
+fn try_match<'a, F, G>(
+	input: &'a str,
+	mut parser: F,
+	mut good: G,
+) -> IResult<&'a str, Option<Match<'a>>>
 where
 	F: FnMut(&'a str) -> IResult<&'a str, &'a str>,
 	G: FnMut(&'a str) -> bool,
@@ -21,12 +25,12 @@ where
 	// Try consuming and see if it still works.
 	if let Ok((remaining, val)) = (parser)(input) {
 		if good(remaining) {
-			Ok((remaining, Match::Once(val)))
+			Ok((remaining, Some(Match::Once(val))))
 		} else {
-			Ok((input, Match::None))
+			Ok((input, None))
 		}
 	} else {
-		Ok((input, Match::None))
+		Ok((input, None))
 	}
 }
 
@@ -46,7 +50,11 @@ impl Capture {
 	/// Tries matching self.
 	// Patterns that may potentially match and those that can match multiple times
 	// are limited by the `good` function. `good() == false` will stop the match.
-	pub fn get_match<'a, F>(&self, input: &'a str, mut good: F) -> IResult<&'a str, Match<'a>>
+	pub fn get_match<'a, F>(
+		&self,
+		input: &'a str,
+		mut good: F,
+	) -> IResult<&'a str, Option<Match<'a>>>
 	where
 		F: FnMut(&'a str) -> bool,
 	{
@@ -54,9 +62,11 @@ impl Capture {
 			Quantifier::Once => {
 				if self.patterns.is_empty() {
 					let word = preceded(multispace0, take_till(|c: char| c.is_whitespace()));
-					map(word, Match::Once)(input)
+					map(word, |x| Some(Match::Once(x)))(input)
 				} else {
-					map(preceded(multispace0, any_of(&self.patterns)), Match::Once)(input)
+					map(preceded(multispace0, any_of(&self.patterns)), |x| {
+						Some(Match::Once(x))
+					})(input)
 				}
 			}
 			Quantifier::MaybeOnce => {
@@ -80,7 +90,7 @@ impl Capture {
 					}
 				}
 
-				Ok((remaining, Match::Many(vals)))
+				Ok((remaining, Some(Match::Many(vals))))
 			}
 			Quantifier::Many1 => {
 				// We must take at least once.
@@ -96,7 +106,7 @@ impl Capture {
 					}
 				}
 
-				Ok((remaining, Match::Many(vals)))
+				Ok((remaining, Some(Match::Many(vals))))
 			}
 			Quantifier::Many0 if self.patterns.is_empty() => {
 				let mut parser = preceded::<_, _, _, super::error::Dummy, _, _>(
@@ -114,9 +124,9 @@ impl Capture {
 					}
 				}
 				let vals = if vals.is_empty() {
-					Match::None
+					None
 				} else {
-					Match::Many(vals)
+					Some(Match::Many(vals))
 				};
 				Ok((remaining, vals))
 			}
@@ -133,9 +143,9 @@ impl Capture {
 					}
 				}
 				let vals = if vals.is_empty() {
-					Match::None
+					None
 				} else {
-					Match::Many(vals)
+					Some(Match::Many(vals))
 				};
 				Ok((remaining, vals))
 			}

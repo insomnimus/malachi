@@ -65,7 +65,7 @@ fn test_once() {
 
 	for (s, expected, cap) in tests {
 		let got = cap.get_match(s, |_| true).unwrap().1;
-		let expected = Match::Once(expected);
+		let expected = Some(Match::Once(expected));
 		assert_eq!(expected, got);
 	}
 }
