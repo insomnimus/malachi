@@ -1,3 +1,3 @@
- # comlang
- A language for defining bot commands. Work in progress.
- 
+# malachi
+A domain specific pattern matching language made mainly for defining bot commands.
+

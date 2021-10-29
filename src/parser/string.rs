@@ -1,3 +1,5 @@
+// This file is licensed under the terms of Apache-2.0 License.
+
 use super::prelude::*;
 
 fn parse_esc(input: &str) -> IResult<&str, char> {

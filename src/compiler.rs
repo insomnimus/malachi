@@ -1,3 +1,5 @@
+// This file is licensed under the terms of Apache-2.0 License.
+
 #[cfg(test)]
 mod tests;
 
