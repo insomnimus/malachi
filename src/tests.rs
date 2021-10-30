@@ -90,7 +90,9 @@ fn test_match() {
 		let cmd = check!(Command::new(src));
 
 		for (input, expected) in map {
-			let got = cmd.get_matches(input).unwrap();
+			let got = cmd.get_matches(input).unwrap_or_else(|| {
+				panic!("returned none:\n{}", input);
+			});
 
 			assert_eq!(
 				expected.get("rest").or(Some(&Match::Once(""))),

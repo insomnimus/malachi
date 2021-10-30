@@ -50,18 +50,17 @@ impl Capture {
 	/// Tries matching self.
 	// Patterns that may potentially match and those that can match multiple times
 	// are limited by the `good` function. `good() == false` will stop the match.
-	pub fn get_match<'a, F>(
-		&self,
-		input: &'a str,
-		mut good: F,
-	) -> IResult<&'a str, Option<Match<'a>>>
+	pub fn get_match<'a, F>(&self, input: &'a str, good: F) -> IResult<&'a str, Option<Match<'a>>>
 	where
 		F: FnMut(&'a str) -> bool,
 	{
 		match self.quantifier {
 			Quantifier::Once => {
 				if self.patterns.is_empty() {
-					let word = preceded(multispace0, take_till(|c: char| c.is_whitespace()));
+					let word = verify(
+						preceded(multispace0, take_till(|c: char| c.is_whitespace())),
+						|s: &str| !s.is_empty(),
+					);
 					map(word, |x| Some(Match::Once(x)))(input)
 				} else {
 					map(preceded(multispace0, any_of(&self.patterns)), |x| {
@@ -71,84 +70,65 @@ impl Capture {
 			}
 			Quantifier::MaybeOnce => {
 				if self.patterns.is_empty() {
-					let word = preceded(multispace0, take_till(|c: char| c.is_whitespace()));
+					let word = verify(
+						preceded(multispace0, take_till(|c: char| c.is_whitespace())),
+						|s: &str| !s.is_empty(),
+					);
 					try_match(input, word, good)
 				} else {
 					try_match(input, any_of(&self.patterns), good)
 				}
 			}
-			Quantifier::Many1 if self.patterns.is_empty() => {
-				let mut word = preceded(multispace0, take_till(|c: char| c.is_whitespace()));
-				let (mut remaining, val) = word(input)?;
-				let mut vals = vec![val];
-				while !remaining.is_empty() && good(remaining) {
-					if let Ok((new_rem, val)) = word(remaining) {
-						vals.push(val);
-						remaining = new_rem;
-					} else {
-						break;
-					}
-				}
-
-				Ok((remaining, Some(Match::Many(vals))))
-			}
-			Quantifier::Many1 => {
-				// We must take at least once.
-				let mut parser = preceded(multispace0, any_of(&self.patterns));
-				let (mut remaining, val) = parser(input)?;
-				let mut vals = vec![val];
-				while !remaining.is_empty() && good(remaining) {
-					if let Ok((new_rem, val)) = parser(remaining) {
-						vals.push(val);
-						remaining = new_rem;
-					} else {
-						break;
-					}
-				}
-
-				Ok((remaining, Some(Match::Many(vals))))
-			}
-			Quantifier::Many0 if self.patterns.is_empty() => {
-				let mut parser = preceded::<_, _, _, super::error::Dummy, _, _>(
-					multispace0,
-					take_till(|c: char| c.is_whitespace()),
+			Quantifier::Many1 => if self.patterns.is_empty() {
+				let parser = verify(
+					preceded(multispace0, take_till(|c: char| c.is_whitespace())),
+					|s: &str| !s.is_empty(),
 				);
-				let mut vals = Vec::new();
-				let mut remaining = input;
-				while !remaining.is_empty() && good(remaining) {
-					if let Ok((new_rem, val)) = parser(remaining) {
-						vals.push(val);
-						remaining = new_rem;
-					} else {
-						break;
-					}
-				}
-				let vals = if vals.is_empty() {
-					None
-				} else {
-					Some(Match::Many(vals))
-				};
-				Ok((remaining, vals))
+				try_many1(input, parser, good)
+			} else {
+				let parser = preceded(multispace0, any_of(&self.patterns));
+				try_many1(input, parser, good)
 			}
-			Quantifier::Many0 => {
-				let mut parser = preceded(multispace0, any_of(&self.patterns));
-				let mut vals = Vec::new();
-				let mut remaining = input;
-				while !remaining.is_empty() && good(remaining) {
-					if let Ok((new_rem, val)) = parser(remaining) {
-						vals.push(val);
-						remaining = new_rem;
-					} else {
-						break;
-					}
-				}
-				let vals = if vals.is_empty() {
-					None
-				} else {
-					Some(Match::Many(vals))
-				};
-				Ok((remaining, vals))
+			.map(|(rem, vals)| (rem, Some(Match::Many(vals)))),
+			Quantifier::Many0 => if self.patterns.is_empty() {
+				let parser = verify(
+					preceded(multispace0, take_till(|c: char| c.is_whitespace())),
+					|s: &str| !s.is_empty(),
+				);
+				try_many1(input, parser, good)
+			} else {
+				let parser = preceded(multispace0, any_of(&self.patterns));
+				try_many1(input, parser, good)
 			}
+			.map(|(rem, vals)| (rem, Some(Match::Many(vals))))
+			.or(Ok((input, None))),
 		}
 	}
+}
+
+fn try_many1<'a, F, G>(input: &'a str, mut inner: F, mut good: G) -> IResult<&'a str, Vec<&'a str>>
+where
+	F: FnMut(&'a str) -> IResult<&'a str, &'a str>,
+	G: FnMut(&'a str) -> bool,
+{
+	// If we match, keep matching until good returns false.
+	// If we don't match, can't do anything, return err.
+	let (mut remaining, val) = inner(input)?;
+	let mut vals = vec![val];
+	let mut last_good_rem = remaining;
+	let mut last_good_count = 1_usize;
+	while let Ok((new_rem, val)) = inner(remaining) {
+		if vals.len() > 50 {
+			break;
+		}
+		vals.push(val);
+		remaining = new_rem;
+		if good(new_rem) {
+			last_good_rem = new_rem;
+			last_good_count = vals.len();
+		}
+	}
+
+	vals.truncate(last_good_count);
+	Ok((last_good_rem, vals))
 }

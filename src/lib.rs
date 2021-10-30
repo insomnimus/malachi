@@ -1,6 +1,9 @@
 // This file is licensed under the terms of Apache-2.0 License.
+#![feature(test)]
 
 mod args;
+#[cfg(test)]
+mod benches;
 mod compiler;
 mod engine;
 pub mod errors;

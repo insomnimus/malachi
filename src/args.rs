@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::Match;
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Args<'c, 't> {
 	pub rest: &'t str,
 	pub(crate) vals: HashMap<&'c str, Match<'t>>,

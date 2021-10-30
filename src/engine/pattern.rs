@@ -14,22 +14,35 @@ impl Pattern {
 		match (self.starts.as_deref(), self.ends.as_deref()) {
 			(Some(starts), Some(ends)) => {
 				let body = take_until(ends);
-				delimited(tag(starts), body, tag(ends))(input)
+				preceded(
+					multispace0,
+					delimited(
+						// Prefix.
+						tag(starts),
+						// Body.
+						body,
+						// Suffix.
+						tag(ends),
+					),
+				)(input)
 			}
 			(Some(starts), None) => {
 				let body = take_while(|c: char| !c.is_whitespace());
 				preceded(
 					// prefix
-					tag(starts),
+					preceded(multispace0, tag(starts)),
 					// up to a space
 					verify(body, |s: &str| !s.is_empty()),
 				)(input)
 			}
 			(None, Some(ends)) => {
-				let body = take_until(ends);
+				let body = preceded(multispace0, take_until(ends));
 				terminated(body, tag(ends))(input)
 			}
-			(None, None) => take_while(|c: char| !c.is_whitespace())(input),
+			(None, None) => verify(
+				preceded(multispace0, take_while(|c: char| !c.is_whitespace())),
+				|s: &str| !s.is_empty(),
+			)(input),
 		}
 	}
 }
