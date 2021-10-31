@@ -14,10 +14,8 @@ pub(crate) use error::IResult;
 use list::List;
 
 use crate::{
-	compiler::{
-		Command,
-		Segment,
-	},
+	ast::Segment,
+	compiler::Command,
 	Args,
 };
 macro_rules! err {

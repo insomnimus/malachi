@@ -6,7 +6,7 @@ use super::{
 	Match,
 };
 use crate::{
-	compiler::Capture,
+	ast::Capture,
 	parser::{
 		prelude::*,
 		Quantifier,

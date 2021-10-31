@@ -5,7 +5,7 @@ use super::{
 	IResult,
 };
 use crate::{
-	compiler::Pattern,
+	ast::Pattern,
 	parser::prelude::*,
 };
 

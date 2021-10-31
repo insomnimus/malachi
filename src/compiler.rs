@@ -9,6 +9,11 @@ use std::{
 };
 
 use crate::{
+	ast::{
+		Capture,
+		Pattern,
+		Segment,
+	},
 	parser::{
 		self,
 		Quantifier,
@@ -42,17 +47,14 @@ impl Command {
 
 		Ok(Self(cmd))
 	}
-}
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Segment {
-	Text(String),
-	Capture(Capture),
-	List(Vec<Capture>),
+	pub fn segments(&self) -> &[Segment] {
+		self.0.as_slice()
+	}
 }
 
 impl Segment {
-	pub fn is_deterministic(&self) -> bool {
+	fn is_deterministic(&self) -> bool {
 		match self {
 			Self::Text(_) => true,
 			Self::Capture(c) => c.is_deterministic(),
@@ -61,21 +63,8 @@ impl Segment {
 	}
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Default)]
-pub struct Pattern {
-	pub starts: Option<String>,
-	pub ends: Option<String>,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct Capture {
-	pub name: String,
-	pub quantifier: Quantifier,
-	pub patterns: Vec<Pattern>,
-}
-
 impl Capture {
-	pub fn is_deterministic(&self) -> bool {
+	fn is_deterministic(&self) -> bool {
 		match self.quantifier {
 			Quantifier::Once => true,
 			_ if self.patterns.is_empty() => false,

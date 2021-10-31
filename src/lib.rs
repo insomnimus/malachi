@@ -2,6 +2,7 @@
 #![feature(test)]
 
 mod args;
+pub mod ast;
 #[cfg(test)]
 mod benches;
 mod compiler;

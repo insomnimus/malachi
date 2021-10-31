@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use crate::{
-	compiler::{
+	ast::{
 		Capture,
 		Pattern,
 	},

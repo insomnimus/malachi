@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::{
-	compiler::{
+	ast::{
 		Capture,
 		Pattern,
 	},

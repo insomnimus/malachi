@@ -26,4 +26,8 @@ impl<'c, 't, 'z: 'c + 't> Args<'c, 't> {
 			_ => None,
 		})
 	}
+	
+	pub fn into_matches(self) -> HashMap<&'c str, Match<'t>> {
+		self.vals
+	}
 }
