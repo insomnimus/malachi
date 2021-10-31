@@ -35,18 +35,6 @@ where
 }
 
 impl Capture {
-	pub fn is_match(&self, input: &str) -> bool {
-		if matches!(self.quantifier, Quantifier::MaybeOnce | Quantifier::Many0) {
-			true
-		} else if self.patterns.is_empty() {
-			preceded::<_, _, _, super::error::Dummy, _, _>(multispace0, take(1_usize))(input)
-				.is_ok()
-		} else {
-			let parser = any_of(&self.patterns);
-			preceded(multispace0, parser)(input).is_ok()
-		}
-	}
-
 	/// Tries matching self.
 	// Patterns that may potentially match and those that can match multiple times
 	// are limited by the `good` function. `good() == false` will stop the match.
