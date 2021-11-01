@@ -82,15 +82,21 @@ impl<'c, 't> List<'c, 't> {
 
 		// Sort in order of importance.
 		// Important = must match.
+		// If no patterns, that goes to the bottom as well.
 		states.sort_by(|a, b| {
-			use core::cmp::Ordering;
 			type Q = Quantifier;
-			// Less goes to the left
-			match (a.quantifier, b.quantifier) {
-				(Q::Once | Q::Many1, Q::Many0 | Q::MaybeOnce) => Ordering::Less,
-				(Q::Many0 | Q::MaybeOnce, Q::Once | Q::Many1) => Ordering::Greater,
-				_ => b.patterns.len().cmp(&a.patterns.len()),
+			fn priority(s: &MatchState) -> u8 {
+				let has_pattern = !s.patterns.is_empty();
+				match s.quantifier {
+					Q::Once | Q::Many1 if has_pattern => 0,
+					Q::Once | Q::Many1 => 1,
+					Q::MaybeOnce if has_pattern => 2,
+					Q::Many0 if has_pattern => 3,
+					Q::MaybeOnce | Q::Many0 => 4,
+				}
 			}
+
+			priority(a).cmp(&priority(b))
 		});
 		Self(states)
 	}
