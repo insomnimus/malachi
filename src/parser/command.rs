@@ -5,7 +5,8 @@ use nom::Finish;
 use super::{
 	capture::{
 		parse_capture,
-		parse_list,
+		parse_group,
+		parse_priority_group,
 	},
 	literal::parse_literal,
 	prelude::*,
@@ -15,9 +16,11 @@ use super::{
 
 pub fn parse_segment(input: &'_ str) -> IResult<&'_ str, Segment<'_>> {
 	alt((
-		// First try parsing a list `[]`.
-		map(parse_list, Segment::List),
-		// Then a single capture `<>`.
+		// First try parsing a priority group  `[]`.
+		map(parse_priority_group, Segment::PriorityGroup),
+		// Or a normal group `{}`.
+		map(parse_group, Segment::Group),
+		// Or a single capture `<>`.
 		map(parse_capture, Segment::Capture),
 		// If all fails, it's a literal.
 		map(parse_literal, Segment::Text),

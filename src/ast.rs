@@ -4,7 +4,8 @@ pub use crate::parser::Quantifier;
 pub enum Segment {
 	Text(String),
 	Capture(Capture),
-	List(Vec<Capture>),
+	Group(Vec<Capture>),
+	PriorityGroup(Vec<Capture>),
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Default)]

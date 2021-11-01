@@ -79,18 +79,30 @@ pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
 			wrap_space0(alt((full, bare))),
 		)),
 		// Finish with `>`.
-		context("unclosed delimiter: '>'", char('>')),
+		cut(context("unclosed delimiter: '>'", char('>'))),
 	)(input)
 }
 
-pub fn parse_list(input: &'_ str) -> IResult<&'_ str, Vec<Capture<'_>>> {
+pub fn parse_priority_group(input: &'_ str) -> IResult<&'_ str, Vec<Capture<'_>>> {
 	let body = many0(wrap_space0(parse_capture));
 	delimited(
-		// Lists start with `[`.
+		// priority groups start with `[`.
 		char('['),
 		// The body is any number of captures.
 		body,
 		// And terminated with `]`.
-		context("missing closing delimiter: ']'", char(']')),
+		cut(context("missing closing delimiter: ']'", char(']'))),
+	)(input)
+}
+
+pub fn parse_group(input: &'_ str) -> IResult<&'_ str, Vec<Capture<'_>>> {
+	let body = many0(wrap_space0(parse_capture));
+	delimited(
+		// groups start with `{`.
+		char('{'),
+		// The body is any number of captures.
+		body,
+		// And terminated with `]`.
+		cut(context("missing closing delimiter: '}'", char('}'))),
 	)(input)
 }

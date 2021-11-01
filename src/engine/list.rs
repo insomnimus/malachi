@@ -69,7 +69,15 @@ impl<'c, 't> MatchState<'c, 't> {
 pub struct List<'c, 't>(Vec<MatchState<'c, 't>>);
 
 impl<'c, 't> List<'c, 't> {
-	pub fn new(caps: &'c [Capture]) -> Self {
+	pub fn priority(caps: &'c [Capture]) -> Self {
+		Self::new(caps, true)
+	}
+
+	pub fn group(caps: &'c [Capture]) -> Self {
+		Self::new(caps, false)
+	}
+
+	fn new(caps: &'c [Capture], keep_order: bool) -> Self {
 		let mut states: Vec<_> = caps
 			.iter()
 			.map(|cap| MatchState {
@@ -80,24 +88,23 @@ impl<'c, 't> List<'c, 't> {
 			})
 			.collect();
 
-		// Sort in order of importance.
-		// Important = must match.
-		// If no patterns, that goes to the bottom as well.
-		states.sort_by(|a, b| {
-			type Q = Quantifier;
-			fn priority(s: &MatchState) -> u8 {
-				let has_pattern = !s.patterns.is_empty();
-				match s.quantifier {
-					Q::Once | Q::Many1 if has_pattern => 0,
-					Q::Once | Q::Many1 => 1,
-					Q::MaybeOnce if has_pattern => 2,
-					Q::Many0 if has_pattern => 3,
-					Q::MaybeOnce | Q::Many0 => 4,
+		if !keep_order {
+			states.sort_by(|a, b| {
+				type Q = Quantifier;
+				fn priority(s: &MatchState) -> u8 {
+					let has_pattern = !s.patterns.is_empty();
+					match s.quantifier {
+						Q::Once | Q::Many1 if has_pattern => 0,
+						Q::Once | Q::Many1 => 1,
+						Q::MaybeOnce if has_pattern => 2,
+						Q::Many0 if has_pattern => 3,
+						Q::MaybeOnce | Q::Many0 => 4,
+					}
 				}
-			}
 
-			priority(a).cmp(&priority(b))
-		});
+				priority(a).cmp(&priority(b))
+			});
+		}
 		Self(states)
 	}
 

@@ -94,7 +94,7 @@ macro_rules! pattern {
 
 macro_rules! captures {
 	($($capture:expr),* $(,)?) => {{
-		Segment::List(vec![ $($capture),* ])
+		Segment::PriorityGroup(vec![ $($capture),* ])
 	}};
 }
 
@@ -112,7 +112,13 @@ macro_rules! cap {
 
 macro_rules! caps {
 	($($x : expr), + $(,) ?) => {{
-		Segment::List(vec![ $($x),* ])
+		Segment::Group(vec![ $($x),* ])
+	}};
+}
+
+macro_rules! priority {
+	($($x : expr), + $(,) ?) => {{
+		Segment::PriorityGroup(vec![ $($x),* ])
 	}};
 }
 
@@ -187,7 +193,7 @@ fn test_capture() {
 }
 
 #[test]
-fn test_list() {
+fn test_priority_group() {
 	let tests = vec![(
 		"[
 	<first*>
@@ -202,7 +208,7 @@ fn test_list() {
 	)];
 
 	for (s, expected) in tests {
-		let got = check!(capture::parse_list, s);
+		let got = check!(capture::parse_priority_group, s);
 		assert_eq!(expected, got.1);
 	}
 }
@@ -249,7 +255,7 @@ fn test_command() {
 	starts('```'), ends('```');
 >" |
 				lit("?play"),
-				caps![
+				priority![
 				capture!("mode?": filter!("starts", "mode=")),
 				capture!("edition?": filter!("starts", "edition=")),
 				],

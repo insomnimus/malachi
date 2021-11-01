@@ -58,7 +58,7 @@ impl Segment {
 		match self {
 			Self::Text(_) => true,
 			Self::Capture(c) => c.is_deterministic(),
-			Self::List(cs) => cs.iter().all(|c| c.is_deterministic()),
+			Self::Group(cs) | Self::PriorityGroup(cs) => cs.iter().all(|c| c.is_deterministic()),
 		}
 	}
 }
@@ -84,11 +84,16 @@ impl<'a> TryFrom<parser::Segment<'a>> for Segment {
 		match seg {
 			Seg::Text(s) => Ok(Self::Text(s)),
 			Seg::Capture(c) => Capture::try_from(c).map(Self::Capture),
-			Seg::List(cs) => cs
+			Seg::Group(cs) => cs
 				.into_iter()
 				.map(Capture::try_from)
 				.collect::<Result<Vec<_>, _>>()
-				.map(Self::List),
+				.map(Self::Group),
+			Seg::PriorityGroup(cs) => cs
+				.into_iter()
+				.map(Capture::try_from)
+				.collect::<Result<Vec<_>, _>>()
+				.map(Self::PriorityGroup),
 		}
 	}
 }

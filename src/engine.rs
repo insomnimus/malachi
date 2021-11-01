@@ -60,8 +60,20 @@ impl<'c, 't> Segments<'c> {
 						.ok()
 						.map(|(rem, val)| (rem, val.map(|v| MatchResult::Once(c.name.as_str(), v))))
 				}
-				Segment::List(cs) => {
-					let list = List::new(cs);
+				Segment::Group(cs) => {
+					let list = List::group(cs);
+					let next = Self(&self.0[1..]);
+					let next = move |s: &str| next.0.is_empty() || next.get_matches(s).is_some();
+					list.get_match(input, next).ok().map(|(rem, vals)| {
+						if vals.is_empty() {
+							(rem, None)
+						} else {
+							(rem, Some(MatchResult::Many(vals)))
+						}
+					})
+				}
+				Segment::PriorityGroup(cs) => {
+					let list = List::priority(cs);
 					let next = Self(&self.0[1..]);
 					let next = move |s: &str| next.0.is_empty() || next.get_matches(s).is_some();
 					list.get_match(input, next).ok().map(|(rem, vals)| {
@@ -76,7 +88,7 @@ impl<'c, 't> Segments<'c> {
 		}
 	}
 
-	pub fn get_matches(self, input: &'t str) -> Option<Args<'c, 't>> {
+	fn get_matches(self, input: &'t str) -> Option<Args<'c, 't>> {
 		if self.0.is_empty() {
 			return None;
 		}

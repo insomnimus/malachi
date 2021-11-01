@@ -45,7 +45,8 @@ pub enum Quantifier {
 pub enum Segment<'a> {
 	Text(String),
 	Capture(Capture<'a>),
-	List(Vec<Capture<'a>>),
+	PriorityGroup(Vec<Capture<'a>>),
+	Group(Vec<Capture<'a>>),
 }
 
 impl<'a> fmt::Display for Segment<'a> {
@@ -53,7 +54,7 @@ impl<'a> fmt::Display for Segment<'a> {
 		match self {
 			Self::Text(s) => f.write_str(s),
 			Self::Capture(c) => write!(f, "{}", &c),
-			Self::List(cs) => {
+			Self::PriorityGroup(cs) => {
 				if cs.is_empty() {
 					f.write_str("[]")
 				} else {
@@ -63,6 +64,18 @@ impl<'a> fmt::Display for Segment<'a> {
 						writeln!(f, "  {}", c)?;
 					}
 					f.write_str("]")
+				}
+			}
+			Self::Group(cs) => {
+				if cs.is_empty() {
+					f.write_str("{}")
+				} else {
+					f.write_str("{\n")?;
+
+					for c in cs {
+						writeln!(f, "  {}", c)?;
+					}
+					f.write_str("}")
 				}
 			}
 		}

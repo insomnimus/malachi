@@ -55,12 +55,22 @@ Some more escape patterns are recognized:
 -	`\t`: tab.
 -	`\r`: carriage return.
 
-# Capture List Syntax
-A capture list defines a list of patterns that will be matched out of order.
+# Capture Group Syntax
+A capture group defines a list of patterns that will be matched out of order.
+There are two forms of capture groups:
+-	Priority groups: These are delimited with `[]` and the match priority of the captures enclosed are unchanged.
+-	Normal group: These groups are enclosed in `{}` and the enclosed captures may be re-ordered for potentially more matches.
+
 The syntax is as follows:
 
+Priority groups:
 ```
-[ CAPTURE1 CAPTURE2 ...CAPTURE_N]
+[ CAPTURE1 CAPTURE2 ...CAPTURE_N ]
+```
+
+Normal groups:
+```
+{ CAPTURE1 CAPTURE2 ...CAPTURE_N }
 ```
 
 Example:
