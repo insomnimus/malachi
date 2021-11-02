@@ -2,11 +2,13 @@
 #![feature(test)]
 
 mod args;
+/// Contains the syntactic elements of a command.
 pub mod ast;
 #[cfg(test)]
 mod benches;
 mod compiler;
 mod engine;
+/// Various errors used by the [Error] type.
 pub mod errors;
 mod parser;
 #[cfg(test)]
