@@ -79,7 +79,7 @@ pub fn parse_capture(input: &'_ str) -> IResult<&'_ str, Capture<'_>> {
 			wrap_space0(alt((full, bare))),
 		)),
 		// Finish with `>`.
-		cut(context("unclosed delimiter: '>'", char('>'))),
+		cut(context("missing closing delimiter: '>'", char('>'))),
 	)(input)
 }
 

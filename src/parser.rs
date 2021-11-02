@@ -184,7 +184,11 @@ impl SyntaxError {
 			line_no += 1;
 			col = ln.len();
 		}
-		let line = s.lines().nth(line_no).unwrap().to_string();
+		let line = s
+			.lines()
+			.nth(line_no.saturating_sub(1))
+			.unwrap()
+			.to_string();
 
 		Self {
 			line,
