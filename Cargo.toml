@@ -1,7 +1,7 @@
 [package]
 name = "malachi"
 description = "A domain specific pattern matching language made for defining bot commands."
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 authors = ["Taylan Gökkaya <insomnimus.dev@gmail.com>"]
 keywords = ["regex", "pattern-matching", "bot", "dsl", "discord"]

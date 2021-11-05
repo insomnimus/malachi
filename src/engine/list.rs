@@ -135,6 +135,7 @@ impl<'c, 't> List<'c, 't> {
 						last_good_rem = new_rem;
 						last_good_state.clone_from(self);
 					}
+					break;
 				}
 			}
 
