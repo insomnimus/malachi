@@ -5,6 +5,7 @@ pub use nom::{
 	bytes::complete::{
 		is_not,
 		tag,
+		tag_no_case,
 		take,
 		take_till,
 		take_until,

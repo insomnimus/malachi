@@ -16,9 +16,17 @@ fn parse_keyword(input: &str) -> IResult<&str, &str> {
 pub fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
 	// The syntax for filters is exactly like a function call in rust.
 	// Arguments  are comma separated quoted strings.
+	// A string literal can be used as a shorthand for `eq("...")`.
 	let args = wrap_space0(list0(parse_string, ','));
 	let args = delimited(char('('), args, char(')'));
 
-	let parser = pair(parse_keyword, args);
-	context("filter", map(parser, |(name, args)| Filter { name, args }))(input)
+	let normal = map(pair(parse_keyword, args), |(name, args)| Filter {
+		name,
+		args,
+	});
+	let short = map(parse_string, |s| Filter {
+		name: "eq",
+		args: vec![s],
+	});
+	alt((normal, short))(input)
 }

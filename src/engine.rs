@@ -5,8 +5,6 @@ mod error;
 mod list;
 mod literal;
 mod pattern;
-#[cfg(test)]
-mod tests;
 
 use std::collections::HashMap;
 

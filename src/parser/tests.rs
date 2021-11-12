@@ -110,12 +110,6 @@ macro_rules! cap {
 		}};
 	}
 
-macro_rules! caps {
-	($($x : expr), + $(,) ?) => {{
-		Segment::Group(vec![ $($x),* ])
-	}};
-}
-
 macro_rules! priority {
 	($($x : expr), + $(,) ?) => {{
 		Segment::PriorityGroup(vec![ $($x),* ])

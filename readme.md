@@ -137,6 +137,9 @@ It does not specify any pattern so the defaults apply:
 ```
 
 # Filters
+Every filter can be used any number of times, the arguments are combined into one filter.
 
--	`starts(prefix)`: The match must start with `prefix`.
--	`ends(suffix)`: The match must end with `suffix`.
+-	`starts(prefix1, prefix2, ...prefixN)`: Any of the given prefixes must match.
+-	`ends(suffix1, suffix2, ...suffixN)`: Any of the suffixes must match.
+-	`eq(s1, s2, ...sN)`: Must match any string given as an argument. Only other filter that can occur if `eq` is specified is `nocase`. `"foo"` is shorthand for `eq("foo")`.
+-	`nocase()`: Ignore case while matching. Not always accurate and ignored while matching suffixes.

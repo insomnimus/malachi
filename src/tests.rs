@@ -47,7 +47,7 @@ macro_rules! vals {
 fn test_match() {
 	let tests = vec![
 		(
-			r".bet <amount>",
+			".bet <amount>",
 			map! {
 				".bet 42": vals! {
 					"amount": "42",
@@ -81,6 +81,25 @@ fn test_match() {
 				},
 				".run `bar`": vals!{
 					"code": "bar",
+				},
+			},
+		),
+		(
+			"?note [
+	<oldest?: `!oldest`, nocase()>
+	<tags*: starts(`-`, `+`)>
+	<name>]",
+			map! {
+				"?note -tag1 -tag2 banana": vals!{
+					"tags": vec!["tag1", "tag2"],
+					"name": "banana",
+					"rest": "",
+				},
+				"?note -tag1 !OldesT banana -tag2 this trails": vals!{
+					"name": "banana",
+					"oldest": "!OldesT",
+					"tags": vec!["tag1", "tag2"],
+					"rest": " this trails",
 				},
 			},
 		),

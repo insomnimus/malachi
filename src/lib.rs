@@ -1,5 +1,6 @@
 // This file is licensed under the terms of Apache-2.0 License.
 #![feature(test)]
+#![allow(clippy::tabs_in_doc_comments)]
 
 mod args;
 /// Contains the syntactic elements of a command.
