@@ -98,4 +98,9 @@ impl<'c, 't, 'z: 'c + 't> Args<'c, 't> {
 	pub fn into_matches(self) -> HashMap<&'c str, Match<'t>> {
 		self.vals
 	}
+
+	/// Returns `true` if `name` has any matches.
+	pub fn is_present(&self, name: &str) -> bool {
+		self.get(name).is_some()
+	}
 }

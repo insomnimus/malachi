@@ -8,9 +8,11 @@ Make sure to check for updates.
 # Warning
 This crate only builds on nightly rust for now.
 
+# Crate Examples
+Please check out the examples subdirectory of this repository.
+
 # TODO
--	[ ] Add documentation.
--	[ ] Improve the test suite.
+-	[ ] Add more documentation.
 
 # Notes
 -	While declaring commands, any kind of whitespace (space, tab, newline, crlf) are treated the same.
