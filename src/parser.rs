@@ -33,11 +33,21 @@ pub struct Capture<'a> {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Pattern<'a>(pub Vec<Filter<'a>>);
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+/// Represents a quantifier.
+///
+/// Quantifiers signal a capture how many times they can/must match.
+/// In a capture, if a quantifier is omitted, [Once][Self::Once] is used.
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum Quantifier {
+	/// Must match exactly once. The default if not specified.
 	Once,
+	/// Can match 0 or 1 times. Corresponds to the '?' symbol.
 	MaybeOnce,
+	/// Can match any number of times including 0. Corresponds to the '*'
+	/// symbol.
 	Many0,
+	/// Must match at least once, potentially more. Corresponds to the '+'
+	/// symbol.
 	Many1,
 }
 

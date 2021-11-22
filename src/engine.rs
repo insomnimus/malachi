@@ -12,6 +12,7 @@ pub(crate) use error::IResult;
 use list::List;
 
 use crate::{
+	args::Match,
 	ast::Segment,
 	compiler::Command,
 	Args,
@@ -23,18 +24,13 @@ macro_rules! err {
 }
 pub(crate) use err;
 
-#[derive(Eq, PartialEq, Clone, Debug)]
-pub enum Match<'a> {
-	Once(&'a str),
-	Many(Vec<&'a str>),
-}
-
 enum MatchResult<'c, 't> {
 	Once(&'c str, Match<'t>),
 	Many(Vec<(&'c str, Match<'t>)>),
 }
 
 impl<'c, 't> Command {
+	/// Match this [Command] to the given text, returning captures if any.
 	pub fn get_matches(&'c self, s: &'t str) -> Option<Args<'c, 't>> {
 		Segments(self.0.as_slice()).get_matches(s)
 	}

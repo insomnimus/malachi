@@ -1,66 +1,20 @@
+pub mod arg_match;
 use std::collections::HashMap;
 
-use crate::Match;
+/// Represents a capture from a text.
+///
+/// The lifetime `'a` refers to the match text.
+#[derive(Eq, PartialEq, Clone, Debug, Hash)]
+pub enum Match<'a> {
+	/// Used whenever a capture matches and has no quantifier or the `?`
+	/// quantifier.
+	Once(&'a str),
+	/// Used when a capture has at least 1 matches and has the `*` or the `+`
+	/// quantifiers.
+	Many(Vec<&'a str>),
+}
 
-/// Contains matches from a text matched by a [Command][crate::Command].
-///
-/// Lifetime `'c` refers to the command and `'t` refers to the text that was
-/// matched.
-///
-/// # Examples
-/// ```rust
-/// use malachi::{
-/// 	Command,
-/// 	Match,
-/// };
-///
-/// // Our command will create a note with a title
-/// // and optionally some tags.
-/// // Tags must start with `-`.
-/// let cmd = Command::new(
-/// 	"?note [
-/// 	<tags*: starts('-')>
-/// 	<title>
-/// ]",
-/// )?;
-///
-/// // An example invocation.
-/// let msg = "?note example This is an example note.";
-///
-/// let args = cmd
-/// 	.get_matches(msg)
-/// 	.ok_or("Command didn't match the message!")?;
-///
-/// // We get capture matches by their name.
-/// assert_eq!(Some(&Match::Once("example")), args.get("title"),);
-///
-/// // We can use `get_once` to simplify it:
-/// assert_eq!(Some("example"), args.get_once("title"),);
-///
-/// assert_eq!(None, args.get("tags"),);
-///
-/// // We can access the note body with args.rest:
-/// assert_eq!(
-/// 	// Notice the leading space, they are kept.
-/// 	" This is an example note.",
-/// 	args.rest,
-/// );
-///
-/// // This time, lets supply some tags too.
-/// let msg = "?note take2 -example -foo Another note!";
-///
-/// let args = cmd
-/// 	.get_matches(msg)
-/// 	.ok_or("Command didn't match the message!")?;
-///
-/// assert_eq!(Some("take2"), args.get_once("title"),);
-///
-/// assert_eq!(Some(&vec!["example", "foo"]), args.get_many("tags"),);
-///
-/// assert_eq!(" Another note!", args.rest,);
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
+#[doc = include_str!("docs/args.md")]
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Args<'c, 't> {
 	/// The trailing part of the text that was not captured by any `capture`.
@@ -102,5 +56,17 @@ impl<'c, 't, 'z: 'c + 't> Args<'c, 't> {
 	/// Returns `true` if `name` has any matches.
 	pub fn is_present(&self, name: &str) -> bool {
 		self.get(name).is_some()
+	}
+
+	pub fn take(&mut self, name: &str) -> Option<Match<'t>> {
+		self.vals.remove(name)
+	}
+
+	pub fn take_many(&mut self, name: &str) -> Option<Vec<&'t str>> {
+		if self.get_many(name).is_some() {
+			self.vals.remove(name).and_then(|m| m.many())
+		} else {
+			None
+		}
 	}
 }

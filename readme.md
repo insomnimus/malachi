@@ -11,9 +11,6 @@ This crate only builds on nightly rust for now.
 # Crate Examples
 Please check out the examples subdirectory of this repository.
 
-# TODO
--	[ ] Add more documentation.
-
 # Notes
 -	While declaring commands, any kind of whitespace (space, tab, newline, crlf) are treated the same.
 -	`<>` defines a capture.
@@ -93,14 +90,14 @@ The flags are optional but must start with `--`
 The code block is not optional and must either start and end with:
 -	"\`\`\`"
 -	"\`"
-
-By default, the `starts` and `ends` attributes also trim the match, which can be turned off by using `no_trim()`.
+Or,
+-	Starts with \`\`\`rust or \`\`\`rs and ends with \`\`\`.
 
 ```
 .run
 <flags*: starts("--")>
 <code:
-	starts("```"), ends("```");
+	starts("```rust", "```rs", "```"), ends("```");
 	starts("`"), ends("`");
 >
 ```
@@ -108,7 +105,8 @@ By default, the `starts` and `ends` attributes also trim the match, which can be
 ## Get a Bible Verse
 This example command has 3 arguments:
 -	`book`: required, must start with `"book=`
--	`chapter` and `verse`: optional, must start with `chapter=` and `verse=` respectively
+-	`chapter`: Optional, must start with either `chapter=` or `ch=`, case is not important.
+-	`verse`: optional, must start with `verse=`.
 
 Since the patterns are wrapped in `[]`, they can be matched out of order.
 
@@ -116,7 +114,7 @@ Since the patterns are wrapped in `[]`, they can be matched out of order.
 .bible
 [
 	<book: starts("book=")>
-	<chapter?: starts("chapter=")>
+	<chapter?: starts("chapter=", "ch="), nocase()>
 	<verse?: starts("verse=")>
 ]
 ```

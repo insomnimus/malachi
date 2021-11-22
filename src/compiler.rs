@@ -21,10 +21,12 @@ use crate::{
 	Error,
 };
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+/// A compiled command that can be used to match text.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Command(pub(crate) Vec<Segment>);
 
 impl Command {
+	/// Compiles a command.
 	pub fn new(s: &str) -> Result<Self, Error> {
 		let cmd = parser::parse_command(s)?;
 		// Transform into ast segments.
@@ -48,8 +50,9 @@ impl Command {
 		Ok(Self(cmd))
 	}
 
-	pub fn segments(&self) -> &[Segment] {
-		self.0.as_slice()
+	/// Returns an iterator over the [Segment]s that make up `self`.
+	pub fn segments(&self) -> std::slice::Iter<'_, Segment> {
+		self.0.iter()
 	}
 }
 
