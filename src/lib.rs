@@ -1,12 +1,10 @@
 // This file is licensed under the terms of Apache-2.0 License.
-#![feature(test)]
+
 #![allow(clippy::tabs_in_doc_comments)]
 
 mod args;
 /// Syntactic elements of a [Command].
 pub mod ast;
-#[cfg(test)]
-mod benches;
 mod compiler;
 mod engine;
 /// Various errors used by the [Error] type.

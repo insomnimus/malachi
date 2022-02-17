@@ -1,13 +1,6 @@
 # malachi
 A domain specific pattern matching language made mainly for defining bot commands.
 
-# Status
-Malachi is in its alpha stages, however it's already being used in a personal bot!
-Make sure to check for updates.
-
-# Warning
-This crate only builds on nightly rust for now.
-
 # Crate Examples
 Please check out the examples subdirectory of this repository.
 
