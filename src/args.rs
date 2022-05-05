@@ -15,7 +15,7 @@ pub enum Match<'a> {
 }
 
 #[doc = include_str!("docs/args.md")]
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug, Default)]
 pub struct Args<'c, 't> {
 	/// The trailing part of the text that was not captured by any `capture`.
 	///
