@@ -39,7 +39,7 @@ impl Command {
 	/// Returns true if the command matches the string at least partially.
 	/// This is equivalent to a command composed of only the first [Segment] of
 	/// `self` matching the string and checking that it is `Some`.
-	/// ##### Examples
+	/// #### Examples
 	/// ```rust
 	/// let cmd = malachi::Command::new("?eval <code: starts('```'), ends('```')>")?;
 	///
