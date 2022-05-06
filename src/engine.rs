@@ -17,9 +17,10 @@ use crate::{
 	compiler::Command,
 	Args,
 };
+
 macro_rules! err {
 	() => {{
-		Err(nom::Err::Error($crate::engine::error::Dummy))
+		::std::result::Result::Err(::nom::Err::Error($crate::engine::error::Dummy))
 	}};
 }
 pub(crate) use err;
@@ -33,6 +34,24 @@ impl<'c, 't> Command {
 	/// Match this [Command] to the given text, returning captures if any.
 	pub fn get_matches(&'c self, s: &'t str) -> Option<Args<'c, 't>> {
 		Segments(self.0.as_slice()).get_matches(s)
+	}
+
+	/// Returns true if the command matches the string at least partially.
+	/// This is equivalent to a command composed of only the first [Segment] of
+	/// `self` matching the string and checking that it is `Some`.
+	/// ##### Examples
+	/// ```rust
+	/// let cmd = malachi::Command::new("?eval <code: starts('```'), ends('```')>")?;
+	///
+	/// // This text won't match but has the correct prefix.
+	/// let text = "?eval 4";
+	///
+	/// assert_eq!(cmd.get_matches(text), None);
+	/// assert!(cmd.has_prefix(text));
+	/// # Ok::<(), malachi::Error>(())
+	/// ```
+	pub fn has_prefix(&self, s: &str) -> bool {
+		Segments(&self.0[..1]).get_matches(s).is_some()
 	}
 }
 

@@ -3,7 +3,7 @@ Contains matches from a text matched by a [Command][crate::Command].
 Lifetime `'c` refers to the command and `'t` refers to the text that was
 matched.
 
-# Examples
+##### Examples
 ```rust
 use malachi::{
     Command,

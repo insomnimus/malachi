@@ -27,7 +27,7 @@ pub struct Command(pub(crate) Vec<Segment>);
 
 impl Command {
 	/// Compiles a command.
-	pub fn new(s: &str) -> Result<Self, Error> {
+	pub fn new(s: &str) -> crate::Result<Self> {
 		let cmd = parser::parse_command(s)?;
 		// Transform into ast segments.
 		let cmd = cmd

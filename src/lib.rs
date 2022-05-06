@@ -22,7 +22,10 @@ pub use args::{
 pub use compiler::Command;
 use errors::*;
 
-/// Every possible error produced by this crate.
+/// Result with `E` being [Error].
+pub type Result<T> = ::std::result::Result<T, Error>;
+
+/// A command compilation error.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Error {
 	/// Returned when the command fails to parse.
