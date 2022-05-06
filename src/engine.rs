@@ -30,9 +30,9 @@ enum MatchResult<'c, 't> {
 	Many(Vec<(&'c str, Match<'t>)>),
 }
 
-impl<'c, 't> Command {
+impl Command {
 	/// Match this [Command] to the given text, returning captures if any.
-	pub fn get_matches(&'c self, s: &'t str) -> Option<Args<'c, 't>> {
+	pub fn get_matches<'c, 't>(&'c self, s: &'t str) -> Option<Args<'c, 't>> {
 		Segments(self.0.as_slice()).get_matches(s)
 	}
 
