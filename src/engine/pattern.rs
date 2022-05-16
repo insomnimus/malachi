@@ -26,11 +26,11 @@ pub fn any_of<'a, 'b>(
 impl Pattern {
 	pub fn parse<'a>(&self, input: &'a str) -> IResult<&'a str, &'a str> {
 		match self {
-			Self::Word => {
+			Self::Word { reg } => {
 				// Take a space delimited word.
 				verify(
 					preceded(multispace0, take_while(|c: char| !c.is_whitespace())),
-					|s: &str| !s.is_empty(),
+					|s: &str| !s.is_empty() && reg.as_ref().map_or(true, |r| r.is_match(s)),
 				)(input)
 			}
 			Self::Eq { any_of, no_case } => {
@@ -50,20 +50,32 @@ impl Pattern {
 			Self::Delimited {
 				starts,
 				ends,
+				reg,
 				no_case,
 				no_trim,
 			} => {
 				let input = input.trim_start();
+				macro_rules! valid {
+					[$s:expr] => (reg.as_ref().map_or(true, |r| r.is_match($s)));
+				}
+
 				if starts.is_empty() {
 					for s in ends {
-						let res = verify(take_until(s.as_str()), |s: &str| !s.is_empty())(input);
+						let res: IResult<&'a str, &'a str> =
+							verify(take_until(s.as_str()), |s: &str| !s.is_empty())(input);
 
 						match res {
 							Err(_) => (),
-							k @ Ok(_) if !*no_trim => return k,
+							Ok((rest, capture)) if !*no_trim => {
+								if valid!(capture) {
+									return Ok((rest, capture));
+								}
+							}
 							Ok((rest, _)) => {
 								let capture = &input[..input.len() - rest.len()];
-								return Ok((rest, capture));
+								if valid!(capture) {
+									return Ok((rest, capture));
+								}
 							}
 						}
 					}
@@ -72,7 +84,7 @@ impl Pattern {
 				} else if ends.is_empty() {
 					for s in starts {
 						let body = take_while(|c: char| !c.is_whitespace());
-						let res = if *no_case {
+						let res: IResult<&'a str, &'a str> = if *no_case {
 							let prefix = tag_no_case(s.as_str());
 							verify(preceded(prefix, body), |s: &str| !s.is_empty())(input)
 						} else {
@@ -82,13 +94,20 @@ impl Pattern {
 
 						match res {
 							Err(_) => (),
-							k @ Ok(_) if !*no_trim => return k,
+							Ok((rest, capture)) if !*no_trim => {
+								if valid!(capture) {
+									return Ok((rest, capture));
+								}
+							}
 							Ok((rest, _)) => {
 								let capture = input[..input.len() - rest.len()].trim_end();
-								return Ok((rest, capture));
+								if valid!(capture) {
+									return Ok((rest, capture));
+								}
 							}
 						}
 					}
+
 					err!()
 				} else {
 					for start in starts {
@@ -96,9 +115,8 @@ impl Pattern {
 							let right = tag(end.as_str());
 							let body = take_until(end.as_str());
 
-							let res = if *no_case {
+							let res: IResult<&'a str, &'a str> = if *no_case {
 								let left = tag_no_case(start.as_str());
-
 								delimited(left, body, right)(input)
 							} else {
 								let left = tag(start.as_str());
@@ -107,10 +125,16 @@ impl Pattern {
 
 							match res {
 								Err(_) => (),
-								k @ Ok(_) if !*no_trim => return k,
+								Ok((rest, capture)) if !*no_trim => {
+									if valid!(capture) {
+										return Ok((rest, capture));
+									}
+								}
 								Ok((rest, _)) => {
 									let capture = input[..input.len() - rest.len()].trim();
-									return Ok((rest, capture));
+									if valid!(capture) {
+										return Ok((rest, capture));
+									}
 								}
 							}
 						}

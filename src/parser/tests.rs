@@ -3,14 +3,14 @@
 use super::*;
 
 macro_rules! pretty_eq {
-	($left:expr, $right:expr) => {{
+	[$left:expr, $right:expr] => {
 		if !$left.eq(&$right) {
 			panic!(
 				"assertion failed: left == right\nleft: {}\nright: {}",
-				&$left, &$right
+				$left, $right
 			);
 		}
-	}};
+	};
 }
 
 fn lit(s: &str) -> Segment {
@@ -18,21 +18,21 @@ fn lit(s: &str) -> Segment {
 }
 
 macro_rules! check {
-	($fn:expr, $arg:expr) => {{
+	[$fn:expr, $arg:expr] => {
 		($fn)($arg).unwrap_or_else(|e| {
 			panic!("\n{}({:?})\nreturned:\n{:?}", stringify!($fn), $arg, e);
 		})
-	}};
+	};
 }
 
 macro_rules! filter {
-	($name:literal) => {{
+	[$name:literal] => {
 		$crate::parser::Filter{
 			name: $name,
 			args: Vec::new(),
 		}
-	}};
-	($name:literal, $($x:expr), + $(,) ?) => {{
+	};
+	[$name:literal, $($x:expr),+ $(,) ?] => {{
 			let args = vec![$(
 			String::from($x),
 			)+];
@@ -56,7 +56,7 @@ fn name_quan(s: &str) -> (&str, Quantifier) {
 }
 
 macro_rules! capture {
-	($name:literal) => {{
+	[$name:literal] => {{
 		let (name, quantifier) = name_quan($name);
 		Capture {
 			name,
@@ -65,7 +65,7 @@ macro_rules! capture {
 		}
 	}};
 	// Only 1 pattern, arguments are filters
-	($name:literal: $($filter:expr),* $(,)?) => {{
+	[$name:literal: $($filter:expr),* $(,)?] => {{
 		let (name, quantifier) = name_quan($name);
 		Capture {
 			name,
@@ -76,7 +76,7 @@ macro_rules! capture {
 		}
 	}};
 	// Multiple patterns, arguments are patterns
-	($name:literal; $($pattern:expr);* $(;)?) => {{
+	[$name:literal; $($pattern:expr);* $(;)?] => {{
 		let (name, quantifier) = name_quan($name);
 		Capture {
 			name,
@@ -87,15 +87,15 @@ macro_rules! capture {
 }
 
 macro_rules! pattern {
-	($($filter:expr),* $(;)?) => {{
+	[$($filter:expr),* $(;)?] => {
 		Pattern(vec![$($filter),* ])
-	}};
+	};
 }
 
 macro_rules! captures {
-	($($capture:expr),* $(,)?) => {{
+	[$($capture:expr),* $(,)?] => {
 		Segment::PriorityGroup(vec![ $($capture),* ])
-	}};
+	};
 }
 
 macro_rules! cap {
@@ -272,5 +272,16 @@ fn test_command() {
 		for (left, right) in expected.iter().zip(got.iter()) {
 			pretty_eq!(left, right);
 		}
+	}
+}
+
+#[test]
+fn test_regex() {
+	let tests = &[("/a/", "a"), (r"/a\/b/", "a/b"), (r"/a\/\d+/", r"a/\d+")];
+
+	for (s, expected) in tests {
+		let expected = Ok(("", expected.to_string()));
+		let got = super::filter::parse_regex(s);
+		assert_eq!(expected, got);
 	}
 }

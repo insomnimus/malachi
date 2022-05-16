@@ -8,6 +8,8 @@ use std::{
 	mem,
 };
 
+use regex::RegexSet;
+
 use crate::{
 	ast::{
 		Capture,
@@ -22,7 +24,7 @@ use crate::{
 };
 
 /// A compiled command that can be used to match text.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug)]
 pub struct Command(pub(crate) Vec<Segment>);
 
 impl Command {
@@ -117,11 +119,10 @@ impl<'a> TryFrom<parser::Capture<'a>> for Capture {
 impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 	type Error = FilterError;
 
-	fn try_from(parser::Pattern(mut filters): parser::Pattern<'a>) -> Result<Self, Self::Error> {
+	fn try_from(parser::Pattern(mut v): parser::Pattern<'a>) -> Result<Self, Self::Error> {
 		let mut no_case = false;
 		let mut no_trim = false;
-		// Get rid of `nocase` filters.
-		filters.retain(|f| {
+		v.retain(|f| {
 			if f.name == "nocase" {
 				no_case = true;
 				false
@@ -132,13 +133,31 @@ impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 				true
 			}
 		});
+		let mut regs = Vec::new();
+		let mut filters = Vec::with_capacity(v.len());
+		for f in v {
+			if f.name == "regex" {
+				if f.args.is_empty() {
+					return Err(FilterError::MissingArgs("regex".into()));
+				}
+				regs.extend(f.args);
+			} else {
+				filters.push(f);
+			}
+		}
+
+		let reg = if regs.is_empty() {
+			None
+		} else {
+			Some(RegexSet::new(regs)?)
+		};
 		if filters.is_empty() {
-			return Ok(Self::Word);
+			return Ok(Self::Word { reg });
 		}
 
 		match filters[0].name {
 			"eq" => {
-				if no_trim {
+				if no_trim || reg.is_some() {
 					return Err(FilterError::Eq);
 				}
 				let mut any_of = Vec::new();
@@ -177,6 +196,7 @@ impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 				Ok(Self::Delimited {
 					starts,
 					ends,
+					reg,
 					no_case,
 					no_trim,
 				})
@@ -186,17 +206,20 @@ impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 	}
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub enum FilterError {
+	// Used when an incompatible fitler is used alongside the `eq` filter.
 	Eq,
 	UnknownFilter(String),
 	MissingArgs(String),
+	Regex(regex::Error),
 }
 
 impl std::error::Error for FilterError {}
 impl fmt::Display for FilterError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			Self::Regex(e) => <regex::Error as fmt::Display>::fmt(e, f),
 			Self::UnknownFilter(s) => write!(f, "unknown filter `{}`", s),
 			Self::Eq => f.write_str("the `eq` filter can only be used along `nocase`"),
 			Self::MissingArgs(name) => write!(f, "`{}` takes at least 1 argument; 0 given", name),
@@ -207,6 +230,12 @@ impl fmt::Display for FilterError {
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum RuleError {
 	NonDeterministicSequence,
+}
+
+impl From<regex::Error> for FilterError {
+	fn from(e: regex::Error) -> Self {
+		Self::Regex(e)
+	}
 }
 
 impl std::error::Error for RuleError {}

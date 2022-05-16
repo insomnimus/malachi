@@ -26,7 +26,7 @@ use errors::*;
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 /// A command compilation error.
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub enum Error {
 	/// Returned when the command fails to parse.
 	Syntax(SyntaxError),

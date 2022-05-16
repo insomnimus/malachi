@@ -13,6 +13,24 @@ fn parse_keyword(input: &str) -> IResult<&str, &str> {
 	)(input)
 }
 
+pub fn parse_regex(input: &str) -> IResult<&str, String> {
+	let upto = is_not("/\\");
+	let parse_fragment = alt((
+		upto,
+		value("/", tag("\\/")),
+		recognize(pair(tag("\\"), take(1_usize))),
+	));
+
+	delimited(
+		tag("/"),
+		context(
+			"empty regex",
+			fold_many1(parse_fragment, String::new, |buf, s| buf + s),
+		),
+		tag("/"),
+	)(input)
+}
+
 pub fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
 	// The syntax for filters is exactly like a function call in rust.
 	// Arguments  are comma separated quoted strings.
@@ -28,5 +46,10 @@ pub fn parse_filter(input: &str) -> IResult<&str, Filter<'_>> {
 		name: "eq",
 		args: vec![s],
 	});
-	alt((normal, short))(input)
+	let reg = map(parse_regex, |s| Filter {
+		name: "regex",
+		args: vec![s],
+	});
+
+	alt((normal, short, reg))(input)
 }

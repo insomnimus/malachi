@@ -1,7 +1,9 @@
+use regex::RegexSet;
+
 pub use crate::parser::Quantifier;
 
 /// A segment in a [Command][crate::Command].
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug)]
 pub enum Segment {
 	/// Literal text, does not capture.
 	Text(String),
@@ -14,7 +16,7 @@ pub enum Segment {
 }
 
 /// Represents a set of rules for the capture to match.
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+#[derive(Debug, Clone)]
 pub enum Pattern {
 	/// Corresponds to the `eq()` filter.
 	Eq { any_of: Vec<String>, no_case: bool },
@@ -22,15 +24,17 @@ pub enum Pattern {
 	Delimited {
 		starts: Vec<String>,
 		ends: Vec<String>,
+		reg: Option<RegexSet>,
+		/// This does not affect the regex!
 		no_case: bool,
 		no_trim: bool,
 	},
 	/// Represents a capture without any filters. E.. `<foo>`.
-	Word,
+	Word { reg: Option<RegexSet> },
 }
 
 /// Represents a capturing item with its name in a command.
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Capture {
 	/// The name of the capture, later used to get its matches.
 	pub name: String,
@@ -42,6 +46,6 @@ pub struct Capture {
 
 impl Pattern {
 	pub(crate) fn is_deterministic(&self) -> bool {
-		self != &Self::Word
+		!matches!(self, Self::Word { reg: None })
 	}
 }

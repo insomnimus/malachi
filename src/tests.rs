@@ -44,7 +44,7 @@ macro_rules! vals {
 }
 
 #[test]
-fn test_match() {
+fn match_succeed() {
 	let tests = vec![
 		(
 			".bet <amount>",
@@ -126,6 +126,21 @@ fn test_match() {
 				},
 			},
 		),
+		(
+			r"!add <n1: /^\-?\d+$/> <nums+: /^\-?\d+$/>",
+			map! {
+				"!add 2 42": vals!{
+					"n1": "2",
+					"nums": vec!["42"],
+					"rest": "",
+				},
+				"!add -42 42 -42 0": vals! {
+					"n1": "-42",
+					"nums": vec!["42", "-42", "0"],
+					"rest": "",
+				},
+			},
+		),
 	];
 
 	for (src, map) in tests {
@@ -149,6 +164,22 @@ fn test_match() {
 
 				assert_eq!(Some(&val), got);
 			}
+		}
+	}
+}
+
+#[test]
+fn match_fail() {
+	let tests = map! {
+		r"!add <n1: /^\-?\d+$/> <nums+: /^\-?\d+$/>": vec!["!add haha 0", "!add 24 0_0", "!add - 2 2"],
+		"?foo <_>": vec!["?foo", "asdf asdf"],
+	};
+
+	for (src, cases) in tests {
+		let cmd = check!(Command::new(src));
+		for s in cases {
+			let m = cmd.get_matches(s);
+			assert_eq!(None, m, "\ncommand: {src}");
 		}
 	}
 }
