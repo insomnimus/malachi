@@ -23,6 +23,7 @@ pub enum Pattern {
 		starts: Vec<String>,
 		ends: Vec<String>,
 		no_case: bool,
+		no_trim: bool,
 	},
 	/// Represents a capture without any filters. E.. `<foo>`.
 	Word,

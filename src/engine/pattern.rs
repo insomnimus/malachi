@@ -9,46 +9,6 @@ use crate::{
 	parser::prelude::*,
 };
 
-/*
-impl Pattern {
-	pub fn _parse<'a>(&self, input: &'a str) -> IResult<&'a str, &'a str> {
-		match (self.starts.as_deref(), self.ends.as_deref()) {
-			(Some(starts), Some(ends)) => {
-				let body = take_until(ends);
-				preceded(
-					multispace0,
-					delimited(
-						// Prefix.
-						tag(starts),
-						// Body.
-						body,
-						// Suffix.
-						tag(ends),
-					),
-				)(input)
-			}
-			(Some(starts), None) => {
-				let body = take_while(|c: char| !c.is_whitespace());
-				preceded(
-					// prefix
-					preceded(multispace0, tag(starts)),
-					// up to a space
-					verify(body, |s: &str| !s.is_empty()),
-				)(input)
-			}
-			(None, Some(ends)) => {
-				let body = preceded(multispace0, take_until(ends));
-				terminated(body, tag(ends))(input)
-			}
-			(None, None) => verify(
-				preceded(multispace0, take_while(|c: char| !c.is_whitespace())),
-				|s: &str| !s.is_empty(),
-			)(input),
-		}
-	}
-}
-*/
-
 pub fn any_of<'a, 'b>(
 	patterns: &'b [Pattern],
 ) -> impl 'b + FnMut(&'a str) -> IResult<&'a str, &'a str> {
@@ -91,16 +51,20 @@ impl Pattern {
 				starts,
 				ends,
 				no_case,
+				no_trim,
 			} => {
+				let input = input.trim_start();
 				if starts.is_empty() {
 					for s in ends {
-						let res =
-							verify(preceded(multispace0, take_until(s.as_str())), |s: &str| {
-								!s.is_empty()
-							})(input);
+						let res = verify(take_until(s.as_str()), |s: &str| !s.is_empty())(input);
 
-						if res.is_ok() {
-							return res;
+						match res {
+							Err(_) => (),
+							k @ Ok(_) if !*no_trim => return k,
+							Ok((rest, _)) => {
+								let capture = &input[..input.len() - rest.len()];
+								return Ok((rest, capture));
+							}
 						}
 					}
 
@@ -110,18 +74,19 @@ impl Pattern {
 						let body = take_while(|c: char| !c.is_whitespace());
 						let res = if *no_case {
 							let prefix = tag_no_case(s.as_str());
-							verify(preceded(preceded(multispace0, prefix), body), |s: &str| {
-								!s.is_empty()
-							})(input)
+							verify(preceded(prefix, body), |s: &str| !s.is_empty())(input)
 						} else {
 							let prefix = tag(s.as_str());
-							verify(preceded(preceded(multispace0, prefix), body), |s: &str| {
-								!s.is_empty()
-							})(input)
+							verify(preceded(prefix, body), |s: &str| !s.is_empty())(input)
 						};
 
-						if res.is_ok() {
-							return res;
+						match res {
+							Err(_) => (),
+							k @ Ok(_) if !*no_trim => return k,
+							Ok((rest, _)) => {
+								let capture = input[..input.len() - rest.len()].trim_end();
+								return Ok((rest, capture));
+							}
 						}
 					}
 					err!()
@@ -133,30 +98,20 @@ impl Pattern {
 
 							let res = if *no_case {
 								let left = tag_no_case(start.as_str());
-								preceded(
-									multispace0,
-									delimited(
-										// Prefix.
-										left, // Body.
-										body, // Suffix.
-										right,
-									),
-								)(input)
+
+								delimited(left, body, right)(input)
 							} else {
 								let left = tag(start.as_str());
-								preceded(
-									multispace0,
-									delimited(
-										// Prefix.
-										left, // Body.
-										body, // Suffix.
-										right,
-									),
-								)(input)
+								delimited(left, body, right)(input)
 							};
 
-							if res.is_ok() {
-								return res;
+							match res {
+								Err(_) => (),
+								k @ Ok(_) if !*no_trim => return k,
+								Ok((rest, _)) => {
+									let capture = input[..input.len() - rest.len()].trim();
+									return Ok((rest, capture));
+								}
 							}
 						}
 					}

@@ -3,11 +3,11 @@
 use crate::*;
 
 macro_rules! check {
-	($x:expr) => {{
+	[$x:expr] => {
 		$x.unwrap_or_else(|e| {
 			panic!("error: {}", e);
 		})
-	}};
+	};
 }
 
 impl<'a> From<&'a str> for Match<'a> {
@@ -23,7 +23,7 @@ impl<'a> From<Vec<&'a str>> for Match<'a> {
 }
 
 macro_rules! map {
-	($($key:literal : $val:expr),* $(,)?) => {{
+	[$($key:literal : $val:expr),* $(,)?] => {{
 		let mut map = std::collections::HashMap::new();
 		$(
 		map.insert($key, $val);
@@ -33,7 +33,7 @@ macro_rules! map {
 }
 
 macro_rules! vals {
-	($($key:literal : $val:expr),* $(,)?) => {{
+	[$($key:literal : $val:expr),* $(,)?] => {{
 		use std::collections::HashMap;
 		let mut map: HashMap<&str, Match<'_>> = HashMap::new();
 		$(
@@ -100,6 +100,29 @@ fn test_match() {
 					"oldest": "!OldesT",
 					"tags": vec!["tag1", "tag2"],
 					"rest": " this trails",
+				},
+			},
+		),
+		(
+			"!foo [<flags+: starts(`-`), notrim()> <_*>]",
+			map! {
+				"!foo -a -b -c d -e": vals! {
+					"flags": vec!["-a", "-b", "-c", "-e"],
+					"_": vec!["d"],
+					"rest": "",
+				},
+			},
+		),
+		(
+			"!foo <quoted+: notrim(), starts(`'`), ends(`'`); notrim(), starts('`'), ends('`')>",
+			map! {
+				"!foo `it's nice` 'isn`t it?'": vals! {
+					"quoted": vec!["`it's nice`", "'isn`t it?'"],
+					"rest": "",
+				},
+				"!foo `a b c d e ` ` 1 2 3 4 5 `": vals! {
+					"quoted": vec!["`a b c d e `", "` 1 2 3 4 5 `"],
+					"rest": "",
 				},
 			},
 		),

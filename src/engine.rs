@@ -19,9 +19,7 @@ use crate::{
 };
 
 macro_rules! err {
-	() => {{
-		::std::result::Result::Err(::nom::Err::Error($crate::engine::error::Dummy))
-	}};
+	[] => (::std::result::Result::Err(::nom::Err::Error($crate::engine::error::Dummy)));
 }
 pub(crate) use err;
 
@@ -51,7 +49,7 @@ impl Command {
 	/// # Ok::<(), malachi::Error>(())
 	/// ```
 	pub fn has_prefix(&self, s: &str) -> bool {
-		Segments(&self.0[..1]).get_matches(s).is_some()
+		!self.0.is_empty() && Segments(&self.0[..1]).get_matches(s).is_some()
 	}
 }
 

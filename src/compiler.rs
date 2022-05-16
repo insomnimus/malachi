@@ -118,23 +118,36 @@ impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 	type Error = FilterError;
 
 	fn try_from(parser::Pattern(mut filters): parser::Pattern<'a>) -> Result<Self, Self::Error> {
-		let old_len = filters.len();
+		let mut no_case = false;
+		let mut no_trim = false;
 		// Get rid of `nocase` filters.
-		filters.retain(|f| f.name != "nocase");
+		filters.retain(|f| {
+			if f.name == "nocase" {
+				no_case = true;
+				false
+			} else if f.name == "notrim" {
+				no_trim = true;
+				false
+			} else {
+				true
+			}
+		});
 		if filters.is_empty() {
 			return Ok(Self::Word);
 		}
-		let no_case = old_len != filters.len();
 
 		match filters[0].name {
 			"eq" => {
+				if no_trim {
+					return Err(FilterError::Eq);
+				}
 				let mut any_of = Vec::new();
 				for f in &filters {
 					match f.name {
 						"eq" if f.args.is_empty() => {
 							return Err(FilterError::MissingArgs(String::from("eq")))
 						}
-						"eq" => any_of.extend(f.args.iter().map(|s| s.to_string())),
+						"eq" => any_of.extend(f.args.iter().map(|s| s.to_owned())),
 						"starts" | "ends" => return Err(FilterError::Eq),
 						unknown => return Err(FilterError::UnknownFilter(unknown.to_string())),
 					};
@@ -165,6 +178,7 @@ impl<'a> TryFrom<parser::Pattern<'a>> for Pattern {
 					starts,
 					ends,
 					no_case,
+					no_trim,
 				})
 			}
 			unknown => Err(FilterError::UnknownFilter(unknown.to_string())),
