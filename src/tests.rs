@@ -141,6 +141,18 @@ fn match_succeed() {
 				},
 			},
 		),
+		(
+			"!foo [<n: /^[0-9]+$/>]",
+			map! {
+				"!foo 42": vals!{"n": "42", "rest": ""},
+			},
+		),
+		(
+			"$foo <amount: /^[0-9]+$/>",
+			map! {
+				"$foo 0": vals!{"amount": "0", "rest": ""},
+			},
+		),
 	];
 
 	for (src, map) in tests {

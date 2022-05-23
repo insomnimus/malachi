@@ -1,6 +1,7 @@
 // This file is licensed under the terms of Apache-2.0 License.
 
 #![allow(clippy::tabs_in_doc_comments)]
+#![doc = include_str!("../tutorial.md")]
 
 mod args;
 /// Syntactic elements of a [Command].
