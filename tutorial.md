@@ -74,7 +74,7 @@ The most basic filter is a filter that matches some text literally. This is the 
 > Note: This may look pointless but there's more to it. Stick with me.
 
 Here's an example:\
-`<hahas*: eq("haha")>`
+`<haha*: eq("haha")>`
 
 As you can see, we use the filter after the name, the quantifier and a `:`.
 This command has only one segment and it is a capture named "haha".
