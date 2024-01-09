@@ -31,7 +31,7 @@ The syntax is as follows:\
 That is, a capture is surrounded by angle brackets `<>`, must have a name, can have a quantifier symbol and can be followed by patterns  after a colon.
 
 Before I show you some examples, these are the quantifiers:
-- `` (no quantifier): The capture must match once.
+- (no quantifier): The capture must match once.
 - `?`: The capture can match once but is satisfied with no matches.
 - `+`: The capture must match at least once.
 - `*`: The capture can match any number of times including 0.
@@ -156,9 +156,9 @@ The `notrim()` filter prevents the [starts][] and [ends][] filters from trimming
 
 ### The `regex` Filter
 The `regex` filter validates the match with a regular expression.
-The syntax of these regular expressions are of the [regex crate](https://crates.io/crates/regex)s.
+The syntax of these regular expressions are of the [regex crate's](https://crates.io/crates/regex).
 
-In order to avoid the [escape hell](https://github.com/Hamz-a/php-regex-best-practices/blob/master/06 Escaping a backslash hell.md), Malachi defines an alternate syntax for this filter.
+In order to avoid the [escape hell](https://github.com/Hamz-a/php-regex-best-practices/blob/master/06 Escaping%20a backslash%20hell.md), Malachi defines an alternate syntax for this filter.
 It is the same as the Javascript's regex literals: a regular expression wrapped in a pair of forward slashes (`/`).
 You can of course use the normal filter syntax: `regex("\\d+")`, however you will need to escape every backslash twice because Malachi strings recognize some of the escape sequences.
 
@@ -220,9 +220,9 @@ They only differ in the order they try to match their captures.
 Priority groups try every capture in order, until one of them matches and the remaining text is tried again from the first capture to the last until all the captures are satisfied.\
 Normal groups also do the same, however they reorder their captures for potentially more matches as the matching continues.
 
-The syntax for match groups are any number of captures grouped together by `{} (Normal groups) or `[]` (Priority groups).
+The syntax for match groups is any number of captures grouped together by `{}` (Normal groups) or `[]` (Priority groups).
 
-Lets implement a command for viewing a verse from the [Dante's Divine Comedy](https://en.wikipedia.org/wiki/Divine_Comedy).
+Let's implement a command for viewing a verse from the [Dante's Divine Comedy](https://en.wikipedia.org/wiki/Divine_Comedy).
 This command will have 3 optional parameters: `part=`, `canto=` and `verse=`.
 We want to be able to use our command with the flags in any order:
 - `?divine part=inferno canto=1 verse=1`
