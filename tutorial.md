@@ -140,7 +140,7 @@ This filter also works with the [nocase][] filter, making prefix matching case i
 	- `NAME=Joestar` (value: `"Joestar"`)
 
 ### The `ends` Filter
-This filter has similar behaviour to the [starts][] filter except it matches a prefix.\
+This filter has similar behaviour to the [starts][] filter except it matches a suffix.\
 Unlike the [starts][] filter, the [nocase][] filter currently has no effect with this filter.
 The [notrim][] filter can be used alongside it.
 
