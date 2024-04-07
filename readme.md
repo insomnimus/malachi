@@ -1,7 +1,7 @@
 # Malachi
 Malachi is a domain specific pattern matching language made mainly for defining bot commands.
 
-There is also a tutorial: [tutorial.md](tutorial.md).
+There is a tutorial: [tutorial.md](tutorial.md).
 
 ## Syntax Example
 ```

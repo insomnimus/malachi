@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2024 Taylan Gökkaya
+
 use std::cell::RefCell;
 
 use crate::{

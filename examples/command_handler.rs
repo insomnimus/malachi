@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2024 Taylan Gökkaya
+
 use std::io::{
 	self,
 	BufRead,
@@ -52,7 +55,7 @@ fn cmd_join(args: Args) {
 	// Tokens are not optional so unwrapping is fine.
 	let tokens = args.get_many("words").unwrap();
 
-	println!("joined: {}", tokens.join(sep));
+	println!("{}", tokens.join(sep));
 }
 
 fn cmd_sort(args: Args) {

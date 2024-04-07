@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2024 Taylan Gökkaya
+
 pub mod arg_match;
 use std::collections::HashMap;
 
