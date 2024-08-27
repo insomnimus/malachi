@@ -1,7 +1,7 @@
 [package]
 name = "malachi"
 description = "A domain specific pattern matching language made for defining bot commands."
-version = "0.9.6"
+version = "0.9.7"
 edition = "2021"
 authors = ["Taylan Gökkaya <insomnimus.dev@gmail.com>"]
 keywords = ["regex", "pattern-matching", "bot", "dsl", "discord"]
@@ -12,4 +12,4 @@ repository = "https://github.com/insomnimus/malachi"
 
 [dependencies]
 nom = "7.1.3"
-regex = "1.10.4"
+regex = "1.10.6"
