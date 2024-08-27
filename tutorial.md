@@ -51,6 +51,7 @@ Simple enough? Lets see some examples!
 	This is the same as the previous example except it is satisfied with 0 matches.
 
 > Ok. That's cool and all, but what else can we do?
+
 Patterns! It would be a shame to call Malachi a pattern matching language without them!
 
 ## Patterns
@@ -197,6 +198,7 @@ The command:\
 
 Will match:
 - `!year year=2022` (value: `"2022"`)
+
 But won't match:
 - `!year 2022`
 - `!year year=this-year`
@@ -228,6 +230,7 @@ We want to be able to use our command with the flags in any order:
 - `?divine part=inferno canto=1 verse=1`
 - `?divine canto=2 part=paradiso`
 - `?divine verse=2 part=purgatorio canto=4`
+
 And so on...
 
 For this, we use a match group.

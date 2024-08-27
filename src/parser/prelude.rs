@@ -51,9 +51,9 @@ pub use nom::{
 
 pub type IResult<I, O, E = nom::error::VerboseError<I>> = Result<(I, O), nom::Err<E>>;
 
-pub fn wrap_space0<'a, F: 'a, O>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O>
+pub fn wrap_space0<'a, F, O>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O>
 where
-	F: FnMut(&'a str) -> IResult<&'a str, O>,
+	F: 'a + FnMut(&'a str) -> IResult<&'a str, O>,
 {
 	delimited(multispace0, inner, multispace0)
 }
